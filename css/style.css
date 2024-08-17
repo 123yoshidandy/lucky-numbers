@@ -1,0 +1,45 @@
+body {
+    width: 90vmin;
+    height: 100vmin;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: yellowgreen;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+span {
+    font-size:300%;
+}
+
+button {
+    font-size: 200%;
+    margin: 1vmin;
+}
+
+.button_deck {
+    width: 10vmin;
+    height: 10vmin;
+}
+
+.table_share {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.table_board {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+td {
+    width: 10vmin;
+    height: 10vmin;
+    background-color: forestgreen;
+    font-size: 5vmin;
+    text-align: center;
+}
