@@ -497,7 +497,7 @@ button.clover:active:not(:disabled) {
 .opponents {
     flex: none;
     display: grid;
-    grid-template-columns: repeat(var(--count, 1), minmax(0, 120px));
+    grid-template-columns: repeat(var(--count, 1), minmax(0, 108px)); /* 4人（相手3人）で並ぶ幅にそろえ、人数で自分の庭の大きさが変わらないようにする */
     justify-content: center;
     gap: 8px;
 }
@@ -760,16 +760,26 @@ button.link {
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    gap: 14px;
-    margin: 4px auto 6px;
+    gap: 16px;
+    margin: 8px auto 4px;
     padding: 6px 0 0;
+}
+
+/* 絵の後ろに淡い光を敷いて、絵を目立たせる */
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: -10px -20px -6px;
+    z-index: -1;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 244, 196, 0.95), rgba(255, 244, 196, 0));
 }
 
 .hero-pool {
     position: relative;
-    width: 50px;
-    height: 50px;
-    margin-bottom: 18px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 24px;
     --leaf: #2f5d3a;
     --leaf-light: #46805a;
     --stem: #24492d;
@@ -778,28 +788,29 @@ button.link {
 
 .hero-pool svg {
     position: absolute;
-    width: 42px;
-    height: 42px;
+    width: 54px;
+    height: 54px;
     filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
 }
 
 .hero-pool .pool-front {
     left: 0;
-    top: 6px;
+    top: 8px;
 }
 
 .hero-pool .pool-mark {
-    width: 42px;
-    height: 42px;
+    width: 54px;
+    height: 54px;
+    font-size: 22px;
     left: 0;
-    top: 6px;
+    top: 8px;
 }
 
 /* 絵の庭の寸法（浮かべるタイルの位置をマスに合わせるため） */
 .hero-board {
-    --garden: 168px;
-    --pad: 6px;
-    --gap: 3px;
+    --garden: min(60vw, 240px, 33dvh); /* 背の低い画面でも、開始ボタンまで1画面に収める */
+    --pad: 8px;
+    --gap: 4px;
     --cell: calc((var(--garden) - 2 * var(--pad) - 3 * var(--gap)) / 4);
     position: relative;
     padding: 20px 0 0 22px;
@@ -807,7 +818,7 @@ button.link {
 
 .hero-axis {
     position: absolute;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 800;
     color: var(--green);
     white-space: nowrap;
@@ -859,9 +870,10 @@ button.link {
 }
 
 .tagline {
-    margin: 4px 0 12px;
+    margin: 6px 0 14px;
     text-align: center;
-    font-size: 14px;
+    font-size: clamp(13px, 4.2vw, 17px); /* 1行に収める */
+    white-space: nowrap;
     line-height: 1.7;
     color: var(--ink);
 }
@@ -869,6 +881,42 @@ button.link {
 .tagline strong {
     color: var(--green);
     font-weight: 800;
+}
+
+/* 開始画面の「ゲームの準備」は、絵より目立たないよう小さめにまとめる */
+#screen-setup .panel {
+    padding: 12px 14px;
+}
+
+#screen-setup .panel h2 {
+    margin-bottom: 4px;
+    font-size: 14px;
+    color: var(--muted);
+}
+
+#screen-setup .row,
+#screen-setup .seat {
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+#screen-setup input,
+#screen-setup select {
+    padding: 4px 8px;
+    font-size: 15px;
+}
+
+#screen-setup .buttons {
+    margin: 10px 0 4px;
+}
+
+#screen-setup .buttons button {
+    padding: 8px 14px;
+    font-size: 15px;
+}
+
+#screen-setup button.link {
+    font-size: 13px;
 }
 
 /* ===== 遊び方 ===== */

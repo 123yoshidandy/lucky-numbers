@@ -49,7 +49,7 @@ export default class UI {
         ['setup', 'online', 'lobby', 'game'].forEach(screen => {
             $(`screen-${screen}`).classList.toggle('hidden', screen !== name);
         });
-        // メニューと遊び方のボタンは、ロビーとゲーム中だけ出す（開始画面には「遊び方を見る」がある）
+        // ホームと遊び方のボタンは、ロビーとゲーム中だけ出す（開始画面には「遊び方を見る」がある）
         const onTitle = name === 'setup' || name === 'online';
         $('menu-button').classList.toggle('hidden', onTitle);
         $('help-button').classList.toggle('hidden', onTitle);
@@ -398,19 +398,16 @@ export default class UI {
         return `${view.current.name}の番です`;
     }
 
-    // ===== メニュー =====
+    // ===== ホーム =====
 
-    openMenu() {
+    // ホーム（開始画面）に戻る。オンラインでは部屋を出る（対戦中なら、自分の番は CPU が代わりに打つ）
+    goHome() {
         if (this.controller === this.online && this.online) {
-            if (confirm('部屋を出ますか？（対戦中なら、あなたの番は CPU が代わりに打ちます）')) {
-                this.leaveOnline();
-                this.showSetup();
-            }
+            this.leaveOnline();
+            this.showSetup();
             return;
         }
-        if (this.controller?.game?.phase !== 'play' || confirm('ゲームをやめて準備画面に戻りますか？')) {
-            this.backToSetup();
-        }
+        this.backToSetup();
     }
 
     backToSetup() {
@@ -441,7 +438,7 @@ export default class UI {
             this.leaveOnline();
             this.showSetup();
         });
-        $('menu-button').addEventListener('click', () => this.openMenu());
+        $('menu-button').addEventListener('click', () => this.goHome());
         $('pool-button').addEventListener('click', () => this.controller?.send({ type: 'draw' }));
         $('discard-button').addEventListener('click', () => this.controller?.send({ type: 'discard' }));
 
