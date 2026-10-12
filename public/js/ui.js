@@ -208,17 +208,14 @@ export default class UI {
     async shareInvite() {
         const code = this.online?.lobby?.roomCode;
         if (!code) return;
-        const url = new URL(location.href);
-        url.search = '';
-        url.searchParams.set('room', code);
-        const server = new URLSearchParams(location.search).get('server');
-        if (server) url.searchParams.set('server', server);
+        // 招待URL（?room=部屋番号。接続先の指定 ?server= は共通部品が引き継ぐ）
+        const url = this.online.inviteUrl();
         const text = `Lucky Numbers で遊ぼう！ 部屋番号 ${code}`;
         try {
             if (navigator.share) {
-                await navigator.share({ title: 'Lucky Numbers', text, url: url.toString() });
+                await navigator.share({ title: 'Lucky Numbers', text, url });
             } else {
-                await navigator.clipboard.writeText(url.toString());
+                await navigator.clipboard.writeText(url);
                 this.toast('招待URLをコピーしました');
             }
         } catch {

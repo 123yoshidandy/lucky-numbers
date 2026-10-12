@@ -1,4 +1,4 @@
-// netplay-kit 1.0.0（f6ebe64）からコピーしたファイル。ここでは直さず、netplay-kit で直してから同期する
+// netplay-kit 1.2.0（9d70588）からコピーしたファイル。ここでは直さず、netplay-kit で直してから同期する
 /**
  * オンライン対戦のサーバーとの通信（画面側、ゲームに共通の部分）
  * 接続・再接続・参加情報の保存・ping・時計のずれの補正・送信・招待URL・イベント通知を行う。画面の描画はしない
@@ -24,13 +24,14 @@
         // storageKey: 参加情報を保存する localStorage のキー（ゲームごとに変える）
         // cpuStepDelayMs: cpu: true の state を、この間隔で順に届ける（0 ならすぐ届ける）
         constructor({ serverUrl, storageKey, pingIntervalMs = DEFAULT_PING_INTERVAL_MS,
-            reconnectDelayMs = DEFAULT_RECONNECT_DELAY_MS, cpuStepDelayMs = 0, roomParam = 'room' } = {}) {
+            reconnectDelayMs = DEFAULT_RECONNECT_DELAY_MS, cpuStepDelayMs = 0, roomParam = 'room', keepParams = ['server'] } = {}) {
             this.serverUrl = serverUrl;
             this.storageKey = storageKey;
             this.pingIntervalMs = pingIntervalMs;
             this.reconnectDelayMs = reconnectDelayMs;
             this.cpuStepDelayMs = cpuStepDelayMs;
             this.roomParam = roomParam;
+            this.keepParams = keepParams;    // 招待URLに残す項目（接続先の ?server= など）
 
             this.listeners = new Map();
             this.socket = null;
@@ -261,15 +262,12 @@
                     this.saveSession(this.session);
                     break;
                 case 'lobby':
-                    this.lobby = message;
-                    this.seat = message.seat;
-                    this.matchId = message.matchId;
-                    if (this.session && this.session.seat !== message.seat) {
-                        this.session.seat = message.seat;
-                        this.saveSession(this.session);
+                    // まだ見せていない state（CPU の手）があれば、その後ろに並べる（state より先に「対戦後」を知らせないため）
+                    if (message.status !== 'lobby' && (this.stateTimer || this.stateQueue.length > 0)) {
+                        this.stateQueue.push(message);
+                        return;
                     }
-                    // ロビーに戻ったら、まだ見せていない前の対戦のビューを捨てる
-                    if (message.status === 'lobby') this.clearStates();
+                    this.applyLobby(message);
                     break;
                 case 'state':
                     if (message.matchId !== undefined && this.matchId !== null && message.matchId < this.matchId) return;
@@ -293,6 +291,18 @@
             this.emit('message', message);
         }
 
+        applyLobby(message) {
+            this.lobby = message;
+            this.seat = message.seat;
+            this.matchId = message.matchId;
+            if (this.session && this.session.seat !== message.seat) {
+                this.session.seat = message.seat;
+                this.saveSession(this.session);
+            }
+            // ロビーに戻ったら、まだ見せていない前の対戦のビューを捨てる
+            if (message.status === 'lobby') this.clearStates();
+        }
+
         // ping の返事は往復時間の半分を引いて、一番速かったときの値を使う。それ以外は ping が届くまでの仮の値
         updateClock(message) {
             if (!Number.isFinite(message.serverNow)) return;
@@ -308,7 +318,7 @@
             if (this.bestRoundTrip === Infinity) this.clockOffset = message.serverNow - now;
         }
 
-        // CPU の手（cpu: true）は間を置いて1手ずつ届ける
+        // CPU の手（cpu: true）は間を置いて1手ずつ届ける（そのあいだに届いた lobby も、順番を守って届ける）
         enqueueState(message) {
             if (!this.cpuStepDelayMs) {
                 this.emit('state', message);
@@ -331,8 +341,14 @@
                 return;
             }
             this.stateQueue.shift();
-            this.lastStateAt = Date.now();
-            this.emit('state', next);
+            if (next.type === 'lobby') {
+                this.applyLobby(next);
+                this.emit('lobby', next);
+                this.emit('message', next);
+            } else {
+                this.lastStateAt = Date.now();
+                this.emit('state', next);
+            }
             this.playStates();
         }
 
@@ -344,11 +360,16 @@
 
         // ===== 招待URL =====
 
-        // 招待URL（?room=部屋番号）
+        // 招待URL（?room=部屋番号）。接続先の ?server= は残す（手元で別のポートのサーバーを試すときも、同じサーバーにつながるように）
         inviteUrl(roomCode = this.lobby?.roomCode ?? this.session?.roomCode) {
+            const current = new URL(location.href);
             const url = new URL(location.href);
             url.search = '';
             url.hash = '';
+            this.keepParams.forEach(name => {
+                const value = current.searchParams.get(name);
+                if (value !== null) url.searchParams.set(name, value);
+            });
             url.searchParams.set(this.roomParam, roomCode);
             return url.toString();
         }

@@ -60,6 +60,7 @@ export default class OnlineGameController {
     startGame() { this.net.start(); }
     backToLobby() { this.net.backToLobby(); }
     isHost() { return this.net.isHost(); }
+    inviteUrl() { return this.net.inviteUrl(); }
 
     // 部屋を出る（サーバーに知らせるので、席が「切断中」のまま残らない。保存した参加情報も消す）
     leave() {
