@@ -41,7 +41,8 @@
     <main>
         <!-- 開始画面（ローカル対戦） -->
         <section id="screen-setup" class="screen">
-            <!-- ゲーム画面をイメージした絵：昇順に並んだ庭と、空いたマスへ置こうとしているタイル（盤面は data-garden、_ は空き） -->
+            <!-- ゲーム画面をイメージした絵：最初に置かれる斜めの4枚が埋まった庭と、空いたマスへ置こうとしているタイル
+                 （盤面は data-garden、_ は空き。data-target のマスに data-number のタイルを浮かべる） -->
             <div class="hero" aria-hidden="true">
                 <div class="hero-pool">
                     <svg class="pool-back" viewBox="0 0 100 100"><use href="#clover"/></svg>
@@ -51,11 +52,11 @@
                 <div class="hero-board">
                     <div class="hero-axis hero-axis-x">小 → 大</div>
                     <div class="hero-axis hero-axis-y">小 → 大</div>
-                    <div class="hero-garden garden" data-garden="2,5,9,13/4,_,11,15/7,10,_,17/8,12,16,_" data-target="1,1"></div>
+                    <div class="hero-garden garden" data-garden="2,5,_,13/4,7,11,_/_,10,14,17/8,_,16,19" data-target="2,0"></div>
                     <div class="hero-held" data-number="6"></div>
                 </div>
             </div>
-            <p class="tagline">1〜20 のクローバーを<strong>たても よこも小さい順</strong>に並べて、<br>4×4 の庭を<strong>最初に埋めた人の勝ち！</strong></p>
+            <p class="tagline">クローバーを<strong>順番どおり</strong>に並べて、<strong>庭を埋めよう！</strong></p>
 
             <div class="panel">
             <h2>ゲームの準備</h2>

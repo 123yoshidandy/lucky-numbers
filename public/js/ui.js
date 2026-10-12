@@ -49,7 +49,10 @@ export default class UI {
         ['setup', 'online', 'lobby', 'game'].forEach(screen => {
             $(`screen-${screen}`).classList.toggle('hidden', screen !== name);
         });
-        $('menu-button').classList.toggle('hidden', name === 'setup' || name === 'online');
+        // メニューと遊び方のボタンは、ロビーとゲーム中だけ出す（開始画面には「遊び方を見る」がある）
+        const onTitle = name === 'setup' || name === 'online';
+        $('menu-button').classList.toggle('hidden', onTitle);
+        $('help-button').classList.toggle('hidden', onTitle);
         if (name !== 'game') $('status').textContent = '';
     }
 
@@ -332,7 +335,10 @@ export default class UI {
                 };
                 let cell;
                 if (number !== null) {
-                    cell = cloverTile(number, options);
+                    // 相手の庭は小さいので、クローバーの絵は省いて数字を大きく見せる
+                    cell = player === view.me
+                        ? cloverTile(number, options)
+                        : element(options.tag, { className: `${options.className} mini-tile`, text: String(number) });
                 } else {
                     classes.push('empty');
                     cell = element(options.tag, { className: classes.join(' '), onClick: options.onClick });
@@ -451,12 +457,15 @@ export default class UI {
 
     // 開始画面の絵と、遊び方の図を描く（index.html の data-* に書いた盤面から）
     renderPictures() {
-        document.querySelectorAll('.hero-garden').forEach(el => {
-            const target = el.dataset.target?.split(',').map(Number);
-            renderPictureGarden(el, el.dataset.garden, target);
-        });
-        document.querySelectorAll('.hero-held').forEach(el => {
-            el.replaceChildren(cloverTile(Number(el.dataset.number), { className: 'held' }));
+        document.querySelectorAll('.hero-board').forEach(board => {
+            const garden = board.querySelector('.hero-garden');
+            const held = board.querySelector('.hero-held');
+            const [row, col] = garden.dataset.target.split(',').map(Number);
+            renderPictureGarden(garden, garden.dataset.garden, [row, col]);
+            // 浮かべるタイルは、光らせたマスの少し上に置く（位置は CSS が --row / --col から求める）
+            held.style.setProperty('--row', row);
+            held.style.setProperty('--col', col);
+            held.replaceChildren(cloverTile(Number(held.dataset.number), { className: 'held' }));
         });
         document.querySelectorAll('.demo-row').forEach(el => {
             el.replaceChildren(...el.dataset.numbers.split(',').map(n => cloverTile(Number(n))));
