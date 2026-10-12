@@ -59,8 +59,7 @@ export default class UI {
 
     showSetup() {
         const setup = loadSetup() ?? { count: 2, seats: [] };
-        $('player-count').value = String(setup.count);
-        this.renderSeats(setup.seats);
+        this.setPlayerCount(setup.count, setup.seats);
         this.showScreen('setup');
     }
 
@@ -86,8 +85,20 @@ export default class UI {
 
     // ===== 開始画面（ローカル対戦） =====
 
+    // 人数を選ぶ（切り替えボタンの選択と、人数に合わせた絵の大きさも変える）
+    setPlayerCount(count, savedSeats = this.readSeats()) {
+        this.playerCount = Math.min(MAX_PLAYERS, Math.max(MIN_PLAYERS, Number(count) || MIN_PLAYERS));
+        $('player-count').querySelectorAll('button').forEach(button => {
+            const selected = Number(button.dataset.count) === this.playerCount;
+            button.classList.toggle('selected', selected);
+            button.setAttribute('aria-checked', String(selected));
+        });
+        $('screen-setup').dataset.players = this.playerCount;
+        this.renderSeats(savedSeats);
+    }
+
     renderSeats(savedSeats = this.readSeats()) {
-        const count = Number($('player-count').value);
+        const count = this.playerCount;
         const list = $('seat-list');
         list.replaceChildren();
         for (let i = 0; i < count; i++) {
@@ -247,10 +258,7 @@ export default class UI {
         const holdingNumber = view.holding?.number ?? null;
         const canAct = view.isMyTurn;
 
-        // 2行のログ：直前の出来事と、今の案内（自分の番なら目立たせる）
-        $('latest-log').textContent = view.logs.at(-1) ?? '';
-        $('guide').textContent = this.guideText(view);
-        $('guide').classList.toggle('my-turn', view.isMyTurn);
+        this.renderLog(view);
 
         // 山札と持っているタイル
         $('pool-count').textContent = String(view.poolCount);
@@ -302,6 +310,7 @@ export default class UI {
     resetBoardMemory() {
         this.previousGardens.clear();
         this.lastView = null;
+        this.lastLogKey = undefined;
     }
 
     // container に player の庭を描く（自分の庭は決まった要素に、相手の庭は新しい要素に描く）
@@ -388,17 +397,32 @@ export default class UI {
         result.append(buttons);
     }
 
-    // 今の案内（ログの2行目）
-    guideText(view) {
-        if (view.result) return 'ゲーム終了';
-        if (view.isMyTurn) {
-            if (!view.holding) return 'あなたの番！ 山札を引くか、場から取ろう';
-            return view.holding.from === 'pool'
-                ? `${view.holding.number} を光るマスに置くか、場に出そう`
-                : `${view.holding.number} を光るマスに置こう`;
+    // 2行のログ：最近の出来事。自分の番のときは、操作の案内を最新の行として流す
+    renderLog(view) {
+        const lines = view.logs.map(text => ({ text, guide: false }));
+        const guide = this.guideText(view);
+        if (guide) lines.push({ text: guide, guide: true });
+        const shown = lines.slice(-2);
+        const key = shown.map(line => line.text).join('\n');
+        if (key === this.lastLogKey) return;
+
+        const box = $('log-lines');
+        const track = element('div', { className: 'log-track' });
+        shown.forEach(line => track.append(element('div', { className: line.guide ? 'log-line guide' : 'log-line', text: line.text })));
+        box.replaceChildren(track);
+        // 行が変わったら、下から上へ1行分流す
+        if (this.lastLogKey !== undefined && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            track.animate([{ transform: 'translateY(50%)', opacity: 0.4 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 220, easing: 'ease-out' });
         }
-        if (view.me && view.current === view.me) return '送信中…';
-        return `${view.current.name}の番`;
+        this.lastLogKey = key;
+    }
+
+    // 自分の番の操作の案内（ほかの人の番は案内しない）
+    guideText(view) {
+        if (view.result || !view.me || view.current !== view.me) return null;
+        if (!view.isMyTurn) return '送信中…';
+        if (!view.holding) return 'あなたの番！ 山札を引くか、場から取ろう';
+        return view.holding.from === 'pool' ? 'クローバーを庭に埋めるか、場に出そう' : 'クローバーを庭に埋めよう';
     }
 
     // ===== ホーム =====
@@ -428,7 +452,9 @@ export default class UI {
     }
 
     bindEvents() {
-        $('player-count').addEventListener('change', () => this.renderSeats());
+        $('player-count').querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', () => this.setPlayerCount(button.dataset.count));
+        });
         $('start-local').addEventListener('click', () => this.startLocal());
         $('open-online').addEventListener('click', () => this.showOnlineMenu());
         $('back-to-setup').addEventListener('click', () => this.showSetup());

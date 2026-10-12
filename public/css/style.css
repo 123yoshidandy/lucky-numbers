@@ -398,6 +398,19 @@ button.clover:active:not(:disabled) {
     opacity: 0.55;
 }
 
+.pool.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 3px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--gold), 0 0 10px 2px rgba(255, 207, 63, 0.8);
+    animation: glow 1.4s ease-in-out infinite;
+    pointer-events: none;
+}
+
 .pool.active .pool-front,
 .pool.active .pool-mark {
     animation: nudge 1.6s ease-in-out infinite;
@@ -471,40 +484,25 @@ button.clover:active:not(:disabled) {
     animation: wiggle 2.4s ease-in-out infinite;
 }
 
-/* 2行のログ：直前の出来事（1行目）と、今の案内（2行目）。高さは変えない */
-.turn-info {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+/* 2行のログ：最近の出来事。自分の番の操作の案内も、ログの行として流れる（高さは変えない） */
+.log-lines {
+    height: 38px;
+    overflow: hidden;
 }
 
-.latest-log, .guide {
+.log-line {
+    height: 19px;
+    font-size: 12px;
+    line-height: 19px;
+    color: var(--muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.latest-log {
-    height: 17px;
-    font-size: 12px;
-    line-height: 17px;
-    color: var(--muted);
-}
-
-.guide {
-    height: 26px;
-    padding: 0 10px;
-    border-radius: 999px;
-    font-size: 14px;
-    font-weight: 800;
-    line-height: 26px;
-    color: var(--ink);
-}
-
-.guide.my-turn {
-    background: #fff1bf;
+.log-line.guide {
     color: var(--green-dark);
-    box-shadow: inset 0 0 0 1.5px var(--gold);
+    font-weight: 800;
 }
 
 /* --- 庭（芝生の上に土の区画が並ぶ） --- */
@@ -628,7 +626,8 @@ button.clover:active:not(:disabled) {
     cursor: pointer;
 }
 
-.clover.placeable::before {
+.clover.placeable::before,
+.clover.takeable::before {
     content: "";
     position: absolute;
     inset: 4%;
@@ -835,7 +834,7 @@ button.link {
 
 /* 絵の庭の寸法（浮かべるタイルの位置をマスに合わせるため） */
 .hero-board {
-    --garden: min(60vw, 240px, 33dvh); /* 背の低い画面でも、開始ボタンまで1画面に収める */
+    --garden: min(60vw, 240px, calc(100dvh - 396px - var(--extra-seats, 0px))); /* 開始ボタンまで1画面に収める */
     --pad: 8px;
     --gap: 4px;
     --cell: calc((var(--garden) - 2 * var(--pad) - 3 * var(--gap)) / 4);
@@ -908,6 +907,83 @@ button.link {
 .tagline strong {
     color: var(--green);
     font-weight: 800;
+}
+
+/* 入力欄は2列に並べるので、3〜4人では1行増える。その分だけ絵を小さくする */
+#screen-setup[data-players="3"],
+#screen-setup[data-players="4"] {
+    --extra-seats: 41px;
+}
+
+#seat-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 10px;
+    margin: 6px 0;
+}
+
+#screen-setup .seat {
+    min-width: 0;
+    margin: 0;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+#screen-setup .seat input[data-role=name] {
+    flex: 1;
+    min-width: 0;
+}
+
+/* CPU の切り替えは、押すと緑になる小さなボタン（チェックボックスは見えなくして使う） */
+.cpu-toggle {
+    flex: none;
+    position: relative;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #e8efe3;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.cpu-toggle input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.cpu-toggle:has(input:checked) {
+    background: var(--green);
+    color: #fff;
+}
+
+.cpu-toggle:has(input:focus-visible) {
+    outline: 2px solid var(--gold);
+}
+
+/* 人数の切り替えボタン */
+.segmented {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 999px;
+    background: #e8efe3;
+}
+
+.segmented button {
+    padding: 4px 14px;
+    box-shadow: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.segmented button.selected {
+    background: var(--green);
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* 開始画面の「ゲームの準備」は、絵より目立たないよう小さめにまとめる */

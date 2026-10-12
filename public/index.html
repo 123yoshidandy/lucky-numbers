@@ -61,13 +61,14 @@
 
             <div class="panel">
             <h2>ゲームの準備</h2>
-            <label class="row">人数
-                <select id="player-count">
-                    <option value="2" selected>2人</option>
-                    <option value="3">3人</option>
-                    <option value="4">4人</option>
-                </select>
-            </label>
+            <!-- 人数は切り替えボタンで選ぶ（ブラウザのプルダウンは出る位置を決められないため） -->
+            <div class="row">人数
+                <div id="player-count" class="segmented" role="radiogroup" aria-label="人数">
+                    <button type="button" role="radio" data-count="2">2人</button>
+                    <button type="button" role="radio" data-count="3">3人</button>
+                    <button type="button" role="radio" data-count="4">4人</button>
+                </div>
+            </div>
             <div id="seat-list"></div>
             <div class="buttons">
                 <button id="start-local" class="primary">ゲーム開始</button>
@@ -128,11 +129,8 @@
                     <span class="table-label">場に出た<br>クローバー</span>
                     <div id="table-tiles" class="table-tiles"></div>
                 </div>
-                <!-- 2行のログ：直前の出来事と、今の案内（自分の番なら目立たせる） -->
-                <div class="turn-info">
-                    <div id="latest-log" class="latest-log"></div>
-                    <div id="guide" class="guide" aria-live="polite"></div>
-                </div>
+                <!-- 2行のログ：最近の出来事。自分の番のときは、操作の案内が最新の行として流れる -->
+                <div id="log-lines" class="log-lines" aria-live="polite"></div>
             </div>
             <div id="my-garden" class="garden mine panel"></div>
             <div id="result" class="result hidden"></div>
