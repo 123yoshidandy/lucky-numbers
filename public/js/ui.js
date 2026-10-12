@@ -12,6 +12,7 @@ import { captureLayout, animateChanges } from './tile-motion.js';
 
 const SETUP_KEY = 'lucky-numbers.setup'; // 開始画面で選んだ人数・名前・CPU
 const TOAST_MS = 2500;
+const AUTO_DRAW_DELAY_MS = 600; // 自動で山札を引くまでの間（自分の番が来たことを見せる）
 
 const $ = (id) => document.getElementById(id);
 
@@ -304,6 +305,22 @@ export default class UI {
 
         animateChanges(this.lastView, view, layout);
         this.lastView = view;
+        this.scheduleAutoDraw(view);
+    }
+
+    // 自分の番で、できることが「山札を引く」だけ（場にクローバーがない）なら、少し間を置いて自動で引く
+    scheduleAutoDraw(view) {
+        if (!this.canOnlyDraw(view) || this.autoDrawTimer) return;
+        this.autoDrawTimer = setTimeout(() => {
+            this.autoDrawTimer = null;
+            // 待つ間に状態が変わっていないか、引く直前に確かめ直す（二重に引かないように）
+            const current = this.controller?.getView();
+            if (current && this.canOnlyDraw(current)) this.controller.send({ type: 'draw' });
+        }, AUTO_DRAW_DELAY_MS);
+    }
+
+    canOnlyDraw(view) {
+        return view.isMyTurn && !view.holding && view.table.length === 0 && view.poolCount > 0;
     }
 
     // 新しいゲームでは、前のゲームの盤面と比べない（ぽんと出す動き・飛ぶ動きの元にしない）
@@ -311,6 +328,8 @@ export default class UI {
         this.previousGardens.clear();
         this.lastView = null;
         this.lastLogKey = undefined;
+        clearTimeout(this.autoDrawTimer);
+        this.autoDrawTimer = null;
     }
 
     // container に player の庭を描く（自分の庭は決まった要素に、相手の庭は新しい要素に描く）
@@ -391,7 +410,7 @@ export default class UI {
         } else {
             buttons.append(
                 element('button', { className: 'primary', text: 'もう一度', onClick: () => this.startLocal(this.localPlayers) }),
-                element('button', { text: '準備画面へ', onClick: () => this.backToSetup() })
+                element('button', { text: 'ホームへ', onClick: () => this.backToSetup() })
             );
         }
         result.append(buttons);
@@ -421,7 +440,7 @@ export default class UI {
     guideText(view) {
         if (view.result || !view.me || view.current !== view.me) return null;
         if (!view.isMyTurn) return '送信中…';
-        if (!view.holding) return 'あなたの番！ 山札を引くか、場から取ろう';
+        if (!view.holding) return this.canOnlyDraw(view) ? 'あなたの番！ 山札から引きます' : 'あなたの番！ 山札を引くか、場から取ろう';
         return view.holding.from === 'pool' ? 'クローバーを庭に埋めるか、場に出そう' : 'クローバーを庭に埋めよう';
     }
 
