@@ -259,7 +259,7 @@ export default class UI {
         // 場
         const table = $('table-tiles');
         table.replaceChildren();
-        if (view.table.length === 0) table.append(element('span', { className: 'hint', text: 'まだありません' }));
+        if (view.table.length === 0) table.append(element('span', { className: 'hint', text: 'まだありません（タップで取れます）' }));
         view.table.forEach((number, index) => {
             table.append(element('button', {
                 className: 'tile',
@@ -269,30 +269,34 @@ export default class UI {
             }));
         });
 
-        // 庭（自分を先頭に）
-        const gardens = $('gardens');
-        gardens.replaceChildren();
-        const ordered = view.me ? [view.me, ...view.players.filter(p => p !== view.me)] : view.players;
-        ordered.forEach(player => gardens.append(this.renderGarden(view, player, canAct && player === view.me ? holdingNumber : null)));
+        // 相手の庭は上に小さく、自分の庭は下に大きく（観戦中は全員を上に並べる）
+        const opponents = $('opponents');
+        const others = view.players.filter(p => p !== view.me);
+        opponents.style.setProperty('--count', others.length);
+        opponents.replaceChildren(...others.map(player => this.renderGarden(view, player, null, element('div'))));
+        const mine = $('my-garden');
+        mine.classList.toggle('hidden', !view.me);
+        if (view.me) this.renderGarden(view, view.me, canAct ? holdingNumber : null, mine);
 
         this.renderResult(view);
 
-        const log = $('log');
-        log.replaceChildren(...[...view.logs].reverse().map(message => element('li', { text: message })));
+        $('latest-log').textContent = view.logs.at(-1) ?? '';
     }
 
-    renderGarden(view, player, placingNumber) {
+    // container に player の庭を描く（自分の庭は決まった要素に、相手の庭は新しい要素に描く）
+    renderGarden(view, player, placingNumber, container) {
         const isWinner = view.result?.winnerIds.includes(player.id);
         const classes = ['garden', 'panel'];
         if (player === view.me) classes.push('mine');
         if (player === view.current && view.phase === 'play') classes.push('current');
         if (isWinner) classes.push('winner');
-        const wrapper = element('div', { className: classes.join(' ') });
+        container.className = classes.join(' ');
+        container.replaceChildren();
 
         const title = element('div', { className: 'garden-title' });
-        title.append(element('span', { text: player.name + (player.isCPU ? '（CPU）' : '') }));
+        title.append(element('span', { className: 'garden-name', text: player.name + (player.isCPU ? '（CPU）' : '') }));
         title.append(element('span', { className: 'hint', text: `${player.tileCount}/${SIZE * SIZE}` }));
-        wrapper.append(title);
+        container.append(title);
 
         const grid = element('div', { className: 'grid' });
         player.garden.forEach((rowValues, row) => {
@@ -306,8 +310,11 @@ export default class UI {
                 grid.append(cell);
             });
         });
-        wrapper.append(grid);
-        return wrapper;
+        // 外枠の大きさ（残りの高さと幅）に合わせて、グリッドを正方形に収める
+        const fit = element('div', { className: 'grid-fit' });
+        fit.append(grid);
+        container.append(fit);
+        return container;
     }
 
     renderResult(view) {
