@@ -1,31 +1,13 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>Lucky Numbers</title>
-        <link rel="stylesheet" href="./css/style.css">
-    </head>
-    <body>
-        <div class="flex-container">
-            <span>Lucky Numbers</span>
-            <div>
-                <button id="button_reset" onclick="reset()">リセット</button>
-            </div>
-        </div>
-        <div class="flex-container">
-            <table class="table_share">
-                <tr id="tr_share" class="tr_share"></tr>
-                <button id="button_deck" class="button_deck" onclick="drawDeck()">山札</button>
-            </table>
-        </div>
-        <div class="flex-container">
-            <table id="table_board1" class="table_board"></table>
-            <!-- <table id="table_board2" class="table_board"></table> -->
-        </div>
-        <!-- <div class="flex-container">
-            <table id="table_board3" class="table_board"></table>
-            <table id="table_board4" class="table_board"></table>
-        </div> -->
-        <script src="./js/main.js"></script>
-    </body>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Lucky Numbers</title>
+    <!-- GitHub Pages ではリポジトリのルートが公開されるので、ゲームの画面（public/）へ移動する。招待URLの ?room= も引き継ぐ -->
+    <script>location.replace('public/' + location.search);</script>
+    <meta http-equiv="refresh" content="0; url=public/">
+</head>
+<body>
+    <a href="public/">Lucky Numbers を開く</a>
+</body>
 </html>

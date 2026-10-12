@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1f5f3a">
+    <title>Lucky Numbers</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%80%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <header id="topbar">
+        <h1>🍀 Lucky Numbers</h1>
+        <div id="status" aria-live="polite"></div>
+        <button id="menu-button" class="small hidden">メニュー</button>
+    </header>
+
+    <main>
+        <!-- 開始画面（ローカル対戦） -->
+        <section id="screen-setup" class="screen panel">
+            <h2>ゲームの準備</h2>
+            <label class="row">人数
+                <select id="player-count">
+                    <option value="2" selected>2人</option>
+                    <option value="3">3人</option>
+                    <option value="4">4人</option>
+                </select>
+            </label>
+            <div id="seat-list"></div>
+            <div class="buttons">
+                <button id="start-local" class="primary">ゲーム開始</button>
+                <button id="open-online">オンラインで遊ぶ</button>
+            </div>
+            <details class="rules">
+                <summary>遊び方</summary>
+                <ul>
+                    <li>各自 4×4 の庭に、1〜20 の数字タイルを並べます。最初に4枚が斜めに置かれます</li>
+                    <li>手番では「山札から1枚引く」か「場のタイルを1枚取る」</li>
+                    <li>引いたタイルは庭に置くか、場に出します。場から取ったタイルは必ず庭に置きます</li>
+                    <li>空いたマスに置くか、置いてあるタイルと入れ替えます（入れ替えたタイルは場へ）</li>
+                    <li>各行は左から右へ、各列は上から下へ、数字が大きくなるように置きます</li>
+                    <li>最初に16マスを埋めた人の勝ち。山札がなくなったら、タイルが一番多い人の勝ち</li>
+                </ul>
+            </details>
+        </section>
+
+        <!-- オンライン対戦の入口 -->
+        <section id="screen-online" class="screen panel hidden">
+            <h2>オンライン対戦</h2>
+            <label class="row">名前 <input id="online-name" maxlength="12" autocomplete="nickname"></label>
+            <div class="buttons">
+                <button id="create-room" class="primary">部屋を作る</button>
+            </div>
+            <label class="row">部屋番号 <input id="room-code" inputmode="numeric" maxlength="5" placeholder="5桁の数字"></label>
+            <div class="buttons">
+                <button id="join-room" class="primary">参加する</button>
+                <button id="back-to-setup">戻る</button>
+            </div>
+        </section>
+
+        <!-- ロビー -->
+        <section id="screen-lobby" class="screen panel hidden">
+            <h2>部屋 <span id="lobby-code"></span></h2>
+            <div class="buttons">
+                <button id="share-invite">招待URLを共有</button>
+            </div>
+            <ul id="lobby-players"></ul>
+            <div id="host-controls" class="buttons">
+                <button id="add-cpu">CPUを追加</button>
+                <button id="start-online" class="primary">ゲーム開始</button>
+            </div>
+            <p id="guest-note" class="hint">部屋を作った人がゲームを始めるまでお待ちください</p>
+            <div class="buttons">
+                <button id="leave-room">部屋を出る</button>
+            </div>
+        </section>
+
+        <!-- ゲーム画面 -->
+        <section id="screen-game" class="screen hidden">
+            <div id="center" class="panel">
+                <button id="pool-button" class="pool">山札<br><span id="pool-count"></span></button>
+                <div id="holding" class="holding"></div>
+                <button id="discard-button" class="hidden">場に出す</button>
+            </div>
+            <div class="panel">
+                <h2>場 <span class="hint">タップで取る</span></h2>
+                <div id="table-tiles" class="table-tiles"></div>
+            </div>
+            <div id="gardens" class="gardens"></div>
+            <div id="result" class="panel result hidden"></div>
+            <details class="panel">
+                <summary>ログ</summary>
+                <ol id="log"></ol>
+            </details>
+        </section>
+    </main>
+
+    <div id="toast" class="toast hidden" role="alert"></div>
+
+    <script type="module" src="./js/main.js"></script>
+</body>
+</html>
