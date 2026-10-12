@@ -7,10 +7,11 @@ import LocalGameController from './game-controller.js';
 import OnlineGameController, { loadOnlineSession } from './online-controller.js';
 import { getServerUrl } from './online-config.js';
 import { SIZE, MIN_PLAYERS, MAX_PLAYERS, canPlace } from './game.js';
+import { element, cloverTile, renderPictureGarden } from './tiles.js';
+import { captureLayout, animateChanges } from './tile-motion.js';
 
 const SETUP_KEY = 'lucky-numbers.setup'; // 開始画面で選んだ人数・名前・CPU
 const TOAST_MS = 2500;
-const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const $ = (id) => document.getElementById(id);
 
@@ -30,28 +31,6 @@ function saveSetup(setup) {
     }
 }
 
-function element(tag, { className, text, onClick, disabled } = {}) {
-    const el = document.createElement(tag);
-    if (className) el.className = className;
-    if (text !== undefined) el.textContent = text;
-    if (onClick) el.addEventListener('click', onClick);
-    if (disabled) el.disabled = true;
-    return el;
-}
-
-// クローバー型のタイル（形は index.html の <symbol id="clover"> を使い回す）
-function cloverTile(number, { tag = 'div', className = '', onClick, disabled } = {}) {
-    const tile = element(tag, { className: `clover ${className}`.trim(), onClick, disabled });
-    const svg = document.createElementNS(SVG_NS, 'svg');
-    svg.setAttribute('viewBox', '0 0 100 100');
-    svg.setAttribute('aria-hidden', 'true');
-    const use = document.createElementNS(SVG_NS, 'use');
-    use.setAttribute('href', '#clover');
-    svg.append(use);
-    tile.append(svg, element('span', { className: 'num', text: String(number) }));
-    return tile;
-}
-
 export default class UI {
     constructor() {
         this.controller = null; // 遊んでいるゲームのコントローラー
@@ -59,7 +38,9 @@ export default class UI {
         this.localPlayers = null;
         this.toastTimer = null;
         this.previousGardens = new Map(); // 前に描いた庭（新しく置かれたタイルを見分ける）
+        this.lastView = null;              // 前に描いたビュー（動いたタイルを見分ける）
         this.bindEvents();
+        this.renderPictures();
     }
 
     // ===== 画面の切り替え =====
@@ -136,7 +117,7 @@ export default class UI {
             saveSetup({ count: players.length, seats: players });
         }
         this.controller?.stop?.();
-        this.previousGardens.clear();
+        this.resetBoardMemory();
         this.localPlayers = players;
         this.controller = new LocalGameController(players, {
             onUpdate: () => this.renderGame(),
@@ -192,7 +173,7 @@ export default class UI {
         // 新しい対戦が始まったら、前の対戦の庭と比べないようにする
         if (lobby.matchId !== this.matchId) {
             this.matchId = lobby.matchId;
-            this.previousGardens.clear();
+            this.resetBoardMemory();
         }
         // 対戦中（playing）と対戦後（ended）はゲーム画面
         if (lobby.status !== 'lobby') {
@@ -260,6 +241,8 @@ export default class UI {
     renderGame() {
         const view = this.controller?.getView();
         if (!view) return;
+        // 描画の前にタイルの位置を測っておき、描画の後に動いたタイルを飛ばす
+        const layout = this.lastView ? captureLayout() : null;
         const holdingNumber = view.holding?.number ?? null;
         const canAct = view.isMyTurn;
 
@@ -273,8 +256,10 @@ export default class UI {
         const holding = $('holding');
         holding.replaceChildren();
         if (view.holding) {
+            const held = cloverTile(holdingNumber, { className: 'big held' });
+            held.id = 'held-tile';
             holding.append(
-                cloverTile(holdingNumber, { className: 'big held' }),
+                held,
                 element('div', { className: 'hint', text: view.current === view.me ? 'あなたのタイル' : `${view.current.name}のタイル` })
             );
         }
@@ -306,6 +291,15 @@ export default class UI {
         this.renderResult(view);
 
         $('latest-log').textContent = view.logs.at(-1) ?? '';
+
+        animateChanges(this.lastView, view, layout);
+        this.lastView = view;
+    }
+
+    // 新しいゲームでは、前のゲームの盤面と比べない（ぽんと出す動き・飛ぶ動きの元にしない）
+    resetBoardMemory() {
+        this.previousGardens.clear();
+        this.lastView = null;
     }
 
     // container に player の庭を描く（自分の庭は決まった要素に、相手の庭は新しい要素に描く）
@@ -339,12 +333,16 @@ export default class UI {
                     className: classes.join(' '),
                     onClick: placeable ? () => this.controller.send({ type: 'place', row, col }) : undefined
                 };
+                let cell;
                 if (number !== null) {
-                    grid.append(cloverTile(number, options));
+                    cell = cloverTile(number, options);
                 } else {
                     classes.push('empty');
-                    grid.append(element(options.tag, { className: classes.join(' '), onClick: options.onClick }));
+                    cell = element(options.tag, { className: classes.join(' '), onClick: options.onClick });
                 }
+                // タイルの動きで、マスの位置を探すための目印
+                Object.assign(cell.dataset, { player: player.id, row, col });
+                grid.append(cell);
             });
         });
         // 外枠の大きさ（残りの高さと幅）に合わせて、グリッドを正方形に収める
@@ -443,5 +441,28 @@ export default class UI {
         $('menu-button').addEventListener('click', () => this.openMenu());
         $('pool-button').addEventListener('click', () => this.controller?.send({ type: 'draw' }));
         $('discard-button').addEventListener('click', () => this.controller?.send({ type: 'discard' }));
+
+        // 遊び方（上部の「？」と開始画面のボタン）。外側をタップしても閉じる
+        const help = $('help-dialog');
+        $('help-button').addEventListener('click', () => help.showModal());
+        $('open-help').addEventListener('click', () => help.showModal());
+        $('close-help').addEventListener('click', () => help.close());
+        help.addEventListener('click', (event) => {
+            if (event.target === help) help.close();
+        });
+    }
+
+    // 開始画面の絵と、遊び方の図を描く（index.html の data-* に書いた盤面から）
+    renderPictures() {
+        document.querySelectorAll('.hero-garden').forEach(el => {
+            const target = el.dataset.target?.split(',').map(Number);
+            renderPictureGarden(el, el.dataset.garden, target);
+        });
+        document.querySelectorAll('.hero-held').forEach(el => {
+            el.replaceChildren(cloverTile(Number(el.dataset.number), { className: 'held' }));
+        });
+        document.querySelectorAll('.demo-row').forEach(el => {
+            el.replaceChildren(...el.dataset.numbers.split(',').map(n => cloverTile(Number(n))));
+        });
     }
 }

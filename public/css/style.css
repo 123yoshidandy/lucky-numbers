@@ -228,19 +228,6 @@ input[type=checkbox] {
     height: 18px;
 }
 
-.rules summary {
-    font-weight: 800;
-    color: var(--green-dark);
-    cursor: pointer;
-}
-
-.rules ul {
-    margin: 8px 0 0;
-    padding-left: 20px;
-    font-size: 14px;
-    line-height: 1.7;
-}
-
 #lobby-code {
     font-family: ui-monospace, Menlo, monospace;
     letter-spacing: 3px;
@@ -714,4 +701,312 @@ button.clover:active:not(:disabled) {
     color: #fff;
     font-size: 14px;
     z-index: 20;
+}
+
+/* ===== 上部バーのボタン ===== */
+
+.topbar-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+button.icon {
+    width: 32px;
+    padding: 5px 0;
+    text-align: center;
+}
+
+button.link {
+    padding: 4px 0;
+    background: none;
+    box-shadow: none;
+    color: var(--green);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* ===== 開始画面の絵と一言説明 ===== */
+
+/* 山札・矢印付きの庭・置こうとしているタイルで、ゲーム画面を小さく描く */
+.hero {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 14px;
+    margin: 4px auto 6px;
+    padding: 6px 0 0;
+}
+
+.hero-pool {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    margin-bottom: 18px;
+    --leaf: #2f5d3a;
+    --leaf-light: #46805a;
+    --stem: #24492d;
+    transform: rotate(-8deg);
+}
+
+.hero-pool svg {
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+
+.hero-pool .pool-front {
+    left: 0;
+    top: 6px;
+}
+
+.hero-pool .pool-mark {
+    width: 42px;
+    height: 42px;
+    left: 0;
+    top: 6px;
+}
+
+/* 絵の庭の寸法（浮かべるタイルの位置をマスに合わせるため） */
+.hero-board {
+    --garden: 168px;
+    --pad: 6px;
+    --gap: 3px;
+    --cell: calc((var(--garden) - 2 * var(--pad) - 3 * var(--gap)) / 4);
+    position: relative;
+    padding: 20px 0 0 22px;
+}
+
+.hero-axis {
+    position: absolute;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--green);
+    white-space: nowrap;
+}
+
+.hero-axis-x {
+    top: 2px;
+    left: 22px;
+    right: 0;
+    text-align: center;
+}
+
+/* 縦の矢印は、横向きの文字を回して上から下へ読ませる */
+.hero-axis-y {
+    top: 20px;
+    bottom: 0;
+    left: 0;
+    width: 18px;
+    writing-mode: vertical-rl;
+    text-align: center;
+}
+
+.hero-garden {
+    width: var(--garden);
+    padding: var(--pad);
+    border-radius: 14px;
+    background:
+        radial-gradient(circle, rgba(255, 255, 255, 0.14) 1px, transparent 1.5px) 0 0 / 10px 10px,
+        linear-gradient(160deg, var(--grass), var(--grass-dark));
+    box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.06), var(--shadow);
+}
+
+.hero-garden .grid {
+    gap: var(--gap);
+}
+
+/* 置こうとしているタイル：光っているマス（2行2列目）の少し上に浮かべ、ゆらゆら揺らす */
+.hero-held {
+    position: absolute;
+    left: calc(22px + var(--pad) + var(--cell) + var(--gap) + var(--cell) * 0.35);
+    top: calc(20px + var(--pad) + var(--cell) + var(--gap) - var(--cell) * 0.25);
+    width: var(--cell);
+    pointer-events: none;
+}
+
+.hero-held .clover {
+    width: 100%;
+    filter: drop-shadow(0 6px 4px rgba(30, 60, 20, 0.35));
+}
+
+.tagline {
+    margin: 4px 0 12px;
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--ink);
+}
+
+.tagline strong {
+    color: var(--green);
+    font-weight: 800;
+}
+
+/* ===== 遊び方 ===== */
+
+.help {
+    width: min(440px, calc(100% - 24px));
+    max-height: min(640px, calc(100dvh - 48px));
+    padding: 0;
+    border: none;
+    border-radius: 18px;
+    background: var(--panel);
+    color: var(--ink);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.help[open] {
+    display: flex;
+    flex-direction: column;
+    animation: rise-in 0.25s ease-out;
+}
+
+.help::backdrop {
+    background: rgba(20, 40, 25, 0.45);
+}
+
+@keyframes rise-in {
+    from { transform: translateY(16px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.help-head {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: linear-gradient(180deg, var(--green), var(--green-dark));
+    color: #fff;
+}
+
+.help-head h2 {
+    margin: 0;
+    color: #fff;
+}
+
+.help-head button {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.6);
+}
+
+.help-body {
+    overflow-y: auto;
+    padding: 4px 16px 16px;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.help-body section {
+    padding: 10px 0;
+    border-bottom: 1px dashed #dfe6d9;
+}
+
+.help-body section:last-child {
+    border-bottom: none;
+}
+
+.help-body h3 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--green-dark);
+}
+
+.help-body p, .help-body ol {
+    margin: 0;
+}
+
+.help-body ol {
+    padding-left: 20px;
+}
+
+.help-body strong {
+    color: var(--green);
+}
+
+/* 置き方の図：1行分のタイルと ○／× */
+.demo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 12px;
+    background: linear-gradient(160deg, var(--grass), var(--grass-dark));
+    width: fit-content;
+}
+
+.demo-row {
+    display: flex;
+    gap: 4px;
+}
+
+.demo-row .clover {
+    width: 36px;
+}
+
+.demo-mark {
+    font-size: 20px;
+    font-weight: 800;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.demo-mark.ok {
+    color: var(--green);
+}
+
+.demo-mark.ng {
+    color: #c0392b;
+}
+
+/* ===== タイルの動き ===== */
+
+/* 裏向きのタイル（山札から引くときに、めくれる前の面） */
+.clover.face-down {
+    --leaf: #2f5d3a;
+    --leaf-light: #46805a;
+    --stem: #24492d;
+}
+
+.clover.face-down .num {
+    background: transparent;
+    box-shadow: none;
+    color: #cfe8c8;
+}
+
+/* 飛んでいるタイル（元の位置に置き、transform で行き先へ動かす） */
+.flyer {
+    position: fixed;
+    z-index: 30;
+    pointer-events: none;
+    transform-origin: center;
+    perspective: 400px;
+}
+
+.flyer-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+}
+
+.flyer-card .clover {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    backface-visibility: hidden;
+    filter: drop-shadow(0 8px 6px rgba(30, 60, 20, 0.35));
+}
+
+.flyer-back {
+    transform: rotateY(180deg);
 }

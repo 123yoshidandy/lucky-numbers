@@ -32,12 +32,32 @@
     <header id="topbar">
         <h1><svg class="logo" viewBox="0 0 100 100" aria-hidden="true"><use href="#clover"/></svg>Lucky Numbers</h1>
         <div id="status" aria-live="polite"></div>
-        <button id="menu-button" class="small hidden">メニュー</button>
+        <div class="topbar-buttons">
+            <button id="help-button" class="small icon" aria-label="遊び方">？</button>
+            <button id="menu-button" class="small hidden">メニュー</button>
+        </div>
     </header>
 
     <main>
         <!-- 開始画面（ローカル対戦） -->
-        <section id="screen-setup" class="screen panel">
+        <section id="screen-setup" class="screen">
+            <!-- ゲーム画面をイメージした絵：昇順に並んだ庭と、空いたマスへ置こうとしているタイル（盤面は data-garden、_ は空き） -->
+            <div class="hero" aria-hidden="true">
+                <div class="hero-pool">
+                    <svg class="pool-back" viewBox="0 0 100 100"><use href="#clover"/></svg>
+                    <svg class="pool-front" viewBox="0 0 100 100"><use href="#clover"/></svg>
+                    <span class="pool-mark">?</span>
+                </div>
+                <div class="hero-board">
+                    <div class="hero-axis hero-axis-x">小 → 大</div>
+                    <div class="hero-axis hero-axis-y">小 → 大</div>
+                    <div class="hero-garden garden" data-garden="2,5,9,13/4,_,11,15/7,10,_,17/8,12,16,_" data-target="1,1"></div>
+                    <div class="hero-held" data-number="6"></div>
+                </div>
+            </div>
+            <p class="tagline">1〜20 のクローバーを<strong>たても よこも小さい順</strong>に並べて、<br>4×4 の庭を<strong>最初に埋めた人の勝ち！</strong></p>
+
+            <div class="panel">
             <h2>ゲームの準備</h2>
             <label class="row">人数
                 <select id="player-count">
@@ -51,17 +71,8 @@
                 <button id="start-local" class="primary">ゲーム開始</button>
                 <button id="open-online">オンラインで遊ぶ</button>
             </div>
-            <details class="rules">
-                <summary>遊び方</summary>
-                <ul>
-                    <li>各自 4×4 の庭に、1〜20 の数字タイルを並べます。最初に4枚が斜めに置かれます</li>
-                    <li>手番では「山札から1枚引く」か「場のタイルを1枚取る」</li>
-                    <li>引いたタイルは庭に置くか、場に出します。場から取ったタイルは必ず庭に置きます</li>
-                    <li>空いたマスに置くか、置いてあるタイルと入れ替えます（入れ替えたタイルは場へ）</li>
-                    <li>各行は左から右へ、各列は上から下へ、数字が大きくなるように置きます</li>
-                    <li>最初に16マスを埋めた人の勝ち。山札がなくなったら、タイルが一番多い人の勝ち</li>
-                </ul>
-            </details>
+            <button id="open-help" class="link">📖 遊び方を見る</button>
+            </div>
         </section>
 
         <!-- オンライン対戦の入口 -->
@@ -121,6 +132,48 @@
             <div id="result" class="result hidden"></div>
         </section>
     </main>
+
+    <!-- 遊び方（上部の「？」と、開始画面の「遊び方を見る」から開く。data-numbers の図は JS で描く） -->
+    <dialog id="help-dialog" class="help">
+        <div class="help-head">
+            <h2>遊び方</h2>
+            <button id="close-help" class="small icon" aria-label="閉じる">✕</button>
+        </div>
+        <div class="help-body">
+            <section>
+                <h3>🎯 目的</h3>
+                <p>自分の庭（4×4 の16マス）を、数字のクローバーで<strong>最初に全部埋めた人の勝ち</strong>です。クローバーは 1〜20 が人数分あり、最初に4枚が左上から右下への斜めに置かれます。</p>
+            </section>
+            <section>
+                <h3>📏 置き方のルール</h3>
+                <p>どの<strong>行も左から右へ</strong>、どの<strong>列も上から下へ</strong>、数字が大きくなるように置きます。同じ行・列に同じ数字は置けません。斜めは関係ありません。</p>
+                <div class="demo">
+                    <div class="demo-row" data-numbers="3,8,12,17"></div>
+                    <span class="demo-mark ok">○</span>
+                </div>
+                <div class="demo">
+                    <div class="demo-row" data-numbers="3,12,8,17"></div>
+                    <span class="demo-mark ng">×</span>
+                </div>
+            </section>
+            <section>
+                <h3>🔁 手番の流れ</h3>
+                <ol>
+                    <li><strong>山札を引く</strong>か、<strong>場のクローバーを取る</strong>（タップ）</li>
+                    <li>光っているマスをタップして<strong>庭に置く</strong>。空いたマスに置くか、置いてあるクローバーと入れ替えます（外したクローバーは場へ）</li>
+                    <li>山札から引いたクローバーは、置かずに<strong>「場に出す」</strong>こともできます。場から取ったクローバーは必ず置きます</li>
+                </ol>
+            </section>
+            <section>
+                <h3>🏁 ゲームの終わり</h3>
+                <p>誰かが16マスを埋めたら、その人の勝ち。山札がなくなったら、庭のクローバーが一番多い人の勝ちです。</p>
+            </section>
+            <section>
+                <h3>💡 コツ</h3>
+                <p>左上には小さい数、右下には大きい数を。真ん中の数（10前後）は、庭の真ん中あたりに置くと後で困りません。場に出たクローバーは相手も取れるので、出すときは相手の庭も見てみましょう。</p>
+            </section>
+        </div>
+    </dialog>
 
     <div id="toast" class="toast hidden" role="alert"></div>
 
