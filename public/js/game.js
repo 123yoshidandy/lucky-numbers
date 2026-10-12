@@ -57,7 +57,8 @@ export default class Game {
         }
         this.seed = seed;
         this.random = createRandom(seed);
-        this.players = players.map(({ name, isCPU }, id) => ({ id, name, isCPU: Boolean(isCPU), garden: emptyGarden() }));
+        // proxy: 部屋を出た人の代わりに CPU が打っている
+        this.players = players.map(({ name, isCPU }, id) => ({ id, name, isCPU: Boolean(isCPU), proxy: false, garden: emptyGarden() }));
         this.pool = [];       // 山札（裏向き。末尾から引く）
         this.table = [];      // 場（表向き）
         this.holding = null;  // 手番の人が持っているタイル { number, from: 'pool' | 'table' }
@@ -93,6 +94,15 @@ export default class Game {
     applyCommand(playerId, command) {
         this.lastError = null;
         if (this.phase !== 'play') return this.reject('ゲームは終わっています');
+        // 部屋を出た人の手番は、CPU が代わりに打つ（手番に関係なく受け付ける）
+        if (command?.type === 'proxy') {
+            const player = this.players[playerId];
+            if (!player || player.proxy) return this.reject('代わりに打てる人ではありません');
+            player.proxy = true;
+            this.commands.push({ playerId, type: 'proxy' });
+            this.log(`${player.name}が抜けたので、CPU が代わりに打ちます`);
+            return true;
+        }
         if (playerId !== this.currentPlayerIndex) return this.reject('あなたの番ではありません');
 
         // 記録には操作に必要な項目だけを残す

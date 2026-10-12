@@ -21,6 +21,7 @@ export function createGameView(game, viewerId) {
             id: player.id,
             name: player.name,
             isCPU: player.isCPU,
+            proxy: player.proxy,
             garden: player.garden.map(row => [...row]),
             tileCount: countTiles(player.garden)
         })),

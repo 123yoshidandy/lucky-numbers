@@ -91,7 +91,7 @@ export default class UI {
         const session = loadOnlineSession();
         if (!session) return false;
         try {
-            await this.connectOnline().joinRoom(session.roomCode, session.name);
+            await this.connectOnline().resume();
             return true;
         } catch {
             this.leaveOnline();
@@ -189,14 +189,19 @@ export default class UI {
         const online = this.online;
         this.controller?.stop?.();
         this.controller = online;
-        if (lobby.status === 'playing') {
+        // 新しい対戦が始まったら、前の対戦の庭と比べないようにする
+        if (lobby.matchId !== this.matchId) {
+            this.matchId = lobby.matchId;
+            this.previousGardens.clear();
+        }
+        // 対戦中（playing）と対戦後（ended）はゲーム画面
+        if (lobby.status !== 'lobby') {
             this.showScreen('game');
             if (online.view) this.renderGame();
             return;
         }
 
         this.showScreen('lobby');
-        this.previousGardens.clear();
         $('lobby-code').textContent = lobby.roomCode;
         const isHost = online.isHost();
         const list = $('lobby-players');
@@ -205,11 +210,11 @@ export default class UI {
             const item = element('li');
             const label = player.isCPU ? `${player.name}（CPU）` : player.name;
             item.append(element('span', { text: label, className: player.connected ? '' : 'offline' }));
-            if (player.seat === 0) item.append(element('span', { className: 'badge', text: 'ホスト' }));
-            if (player.seat === online.session?.seat) item.append(element('span', { className: 'badge', text: 'あなた' }));
+            if (player.seat === lobby.hostSeat) item.append(element('span', { className: 'badge', text: 'ホスト' }));
+            if (player.seat === lobby.seat) item.append(element('span', { className: 'badge', text: 'あなた' }));
             if (!player.connected) item.append(element('span', { className: 'badge muted', text: '切断中' }));
             if (isHost && player.isCPU) {
-                item.append(element('button', { className: 'small', text: '外す', onClick: () => online.removePlayer(player.seat) }));
+                item.append(element('button', { className: 'small', text: '外す', onClick: () => online.removeCpu(player.seat) }));
             }
             list.append(item);
         });
@@ -314,7 +319,7 @@ export default class UI {
         container.replaceChildren();
 
         const title = element('div', { className: 'garden-title' });
-        title.append(element('span', { className: 'garden-name', text: player.name }));
+        title.append(element('span', { className: 'garden-name', text: player.proxy ? `${player.name}（代行）` : player.name }));
         title.append(element('span', { className: 'hint', text: `${player.tileCount}/${SIZE * SIZE}` }));
         container.append(title);
 
@@ -363,10 +368,13 @@ export default class UI {
         );
         const buttons = element('div', { className: 'buttons' });
         if (this.controller === this.online) {
+            // 対戦後は、ホストが同じ顔ぶれで再戦でき、部屋に戻るのは誰でもできる
             if (this.online.isHost()) {
-                buttons.append(element('button', { className: 'primary', text: '部屋に戻る', onClick: () => this.online.backToLobby() }));
-            } else {
-                buttons.append(element('span', { className: 'hint', text: '部屋を作った人が部屋に戻るまでお待ちください' }));
+                buttons.append(element('button', { className: 'primary', text: 'もう一度', onClick: () => this.online.startGame() }));
+            }
+            buttons.append(element('button', { text: '部屋に戻る', onClick: () => this.online.backToLobby() }));
+            if (!this.online.isHost()) {
+                result.append(element('p', { className: 'hint', text: 'ホストが「もう一度」を押すと、同じメンバーで再戦します' }));
             }
         } else {
             buttons.append(
@@ -393,7 +401,7 @@ export default class UI {
 
     openMenu() {
         if (this.controller === this.online && this.online) {
-            if (confirm('部屋を出ますか？（同じ部屋には戻れなくなります）')) {
+            if (confirm('部屋を出ますか？（対戦中なら、あなたの番は CPU が代わりに打ちます）')) {
                 this.leaveOnline();
                 this.showSetup();
             }

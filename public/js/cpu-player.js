@@ -72,8 +72,14 @@ export function chooseCpuCommand(game) {
     return { type: 'draw' };
 }
 
+// CPU が打つ番か（CPU の席と、部屋を出た人の代わりに打つ席）
+export function isCpuTurn(game) {
+    const player = game.getCurrentPlayer();
+    return game.phase === 'play' && (player.isCPU || player.proxy);
+}
+
 // CPUの手を1つ進める（タイルを引く／取る、置く／捨てるのそれぞれが1手）
 export function runCpuStep(game) {
-    if (game.phase !== 'play' || !game.getCurrentPlayer().isCPU) return false;
+    if (!isCpuTurn(game)) return false;
     return game.applyCommand(game.currentPlayerIndex, chooseCpuCommand(game));
 }

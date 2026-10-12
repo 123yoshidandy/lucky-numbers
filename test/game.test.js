@@ -156,6 +156,15 @@ describe('再現とビュー', () => {
         expect(game.commands[0]).toEqual({ playerId: player, type: 'draw' }); // 余計な項目は記録しない
     });
 
+    it('代行（部屋を出た人の番を CPU が打つ）は手番に関係なく受け付け、記録から再現できる', () => {
+        const game = new Game(PLAYERS, { seed: 3 });
+        const other = 1 - game.currentPlayerIndex;
+        expect(game.applyCommand(other, { type: 'proxy' })).toBe(true);
+        expect(game.applyCommand(other, { type: 'proxy' })).toBe(false);
+        const replayed = Game.replay(PLAYERS, { seed: 3 }, game.commands);
+        expect(replayed.players[other].proxy).toBe(true);
+    });
+
     it('ビューには山札の並びを入れず、枚数だけを入れる', () => {
         const game = new Game(PLAYERS, { seed: 3 });
         const view = createGameView(game, 0);

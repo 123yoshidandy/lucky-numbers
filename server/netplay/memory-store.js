@@ -1,3 +1,4 @@
+// netplay-kit 1.0.0（f6ebe64）からコピーしたファイル。ここでは直さず、netplay-kit で直してから同期する
 /**
  * 手元で使う保存先（テストと手元のテスト用サーバー用）
  * DynamoDB の保存先と同じ形で、部屋の版が違えば ConflictError を投げる
@@ -11,9 +12,12 @@ export class MemoryStore {
     constructor() {
         this.rooms = new Map();
         this.connections = new Map();
+        this.reads = 0;  // 読み込みの回数（テストで、中継のたびの読み込みを確かめるため）
+        this.writes = 0;
     }
 
     async getRoom(code) {
+        this.reads++;
         return clone(this.rooms.get(code)) ?? null;
     }
 
@@ -22,14 +26,17 @@ export class MemoryStore {
         if ((current?.version ?? 0) !== previousVersion) {
             throw new ConflictError();
         }
+        this.writes++;
         this.rooms.set(room.code, clone(room));
     }
 
     async getConnection(connectionId) {
+        this.reads++;
         return clone(this.connections.get(connectionId)) ?? null;
     }
 
     async putConnection(connection) {
+        this.writes++;
         this.connections.set(connection.connectionId, clone(connection));
     }
 

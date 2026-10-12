@@ -1,6 +1,8 @@
+// netplay-kit 1.0.0（f6ebe64）からコピーしたファイル。ここでは直さず、netplay-kit で直してから同期する
 /**
  * DynamoDB の保存先
- * 1つのテーブルに、部屋（pk = ROOM#コード）と接続（pk = CONN#接続ID）を入れる
+ * 1つのテーブルに、部屋（pk = ROOM#部屋番号）と接続（pk = CONN#接続ID）を入れる
+ * 接続には部屋番号だけを持ち、席番号は持たない（席は部屋の players から connectionId で求める）
  * どちらも expiresAt（UNIX秒）を過ぎると DynamoDB の TTL で自動的に消える
  */
 
@@ -27,7 +29,7 @@ export class DynamoStore {
         return this.getItem(`ROOM#${code}`);
     }
 
-    // 読み込んだときの版のままなら保存する（新しい部屋は、同じコードの部屋がないときだけ作る）
+    // 読み込んだときの版のままなら保存する（新しい部屋は、同じ番号の部屋がないときだけ作る）
     async putRoom(room, previousVersion) {
         const condition = previousVersion === 0
             ? { ConditionExpression: 'attribute_not_exists(pk)' }

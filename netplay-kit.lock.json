@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "commit": "f6ebe64",
+  "serverDir": "server/netplay",
+  "clientDir": "public/js/netplay",
+  "files": {
+    "server/netplay/room-service.js": "89c97a04e0b43253e8f638a979e38e33bd41a245b823c581b9844d87a17f7212",
+    "server/netplay/handler.js": "6a35ec6d71c8e0b6e9dfd158068682487fa5d6f645aaa9ea9a0c334168f2321d",
+    "server/netplay/dynamo-store.js": "42c6549f178077a8f85c516b491eea434f85a08ae82e43257bc84758abaf327a",
+    "server/netplay/memory-store.js": "293cf024eadfcc71dd2152e38e0b9c8a34debf7afb3f2d3ab058754e40b297b3",
+    "server/netplay/dev-server.js": "78b5f27dc21d0e3f4a5a4be864cde486966452664939bb7cd919727e91c093f1",
+    "server/netplay/testing.js": "1b9b13216a8ccc2b843610f287bc886c4214cafd1e014dfbf29a70e74176e944",
+    "public/js/netplay/netplay-client.js": "d49efa80a1d33cba988bc2f07eaf623843dbd456fb1a338aa7da12945ab08571",
+    "public/js/netplay/netplay-client.mjs": "b13a3b190b462f0e050b005991d77266400aa4cfe770269d3766de255a4e1d79"
+  }
+}
