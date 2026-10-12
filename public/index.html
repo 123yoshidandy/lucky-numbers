@@ -6,11 +6,31 @@
     <meta name="theme-color" content="#1f5f3a">
     <title>Lucky Numbers</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%80%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
     <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
+    <!-- クローバー型のタイルの形。色は使う側の CSS 変数（--leaf / --leaf-light / --stem）で変える -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+        <defs>
+            <g id="clover-leaf">
+                <path d="M50 50 C 31 43, 19 23, 32 12 C 40 6, 50 11, 50 20 C 50 11, 60 6, 68 12 C 81 23, 69 43, 50 50 Z" style="fill: var(--leaf, #43a047)"/>
+                <path d="M50 46 L50 23" style="stroke: var(--leaf-light, #81c784)" stroke-width="2.5" stroke-linecap="round"/>
+            </g>
+            <symbol id="clover" viewBox="0 0 100 100">
+                <path d="M53 55 Q 64 74 80 90" fill="none" style="stroke: var(--stem, #2e7d32)" stroke-width="6" stroke-linecap="round"/>
+                <use href="#clover-leaf"/>
+                <use href="#clover-leaf" transform="rotate(90 50 50)"/>
+                <use href="#clover-leaf" transform="rotate(180 50 50)"/>
+                <use href="#clover-leaf" transform="rotate(270 50 50)"/>
+            </symbol>
+        </defs>
+    </svg>
+
     <header id="topbar">
-        <h1>🍀 Lucky Numbers</h1>
+        <h1><svg class="logo" viewBox="0 0 100 100" aria-hidden="true"><use href="#clover"/></svg>Lucky Numbers</h1>
         <div id="status" aria-live="polite"></div>
         <button id="menu-button" class="small hidden">メニュー</button>
     </header>
@@ -81,7 +101,13 @@
             <div id="opponents" class="opponents"></div>
             <div id="center" class="panel">
                 <div class="center-row">
-                    <button id="pool-button" class="pool">山札<br><span id="pool-count"></span></button>
+                    <!-- 山札（裏向きのクローバーの束と残りの枚数） -->
+                    <button id="pool-button" class="pool" aria-label="山札から引く">
+                        <svg class="pool-back" viewBox="0 0 100 100" aria-hidden="true"><use href="#clover"/></svg>
+                        <svg class="pool-front" viewBox="0 0 100 100" aria-hidden="true"><use href="#clover"/></svg>
+                        <span class="pool-mark">?</span>
+                        <span id="pool-count" class="pool-count"></span>
+                    </button>
                     <div id="holding" class="holding"></div>
                     <button id="discard-button" class="hidden">場に出す</button>
                 </div>

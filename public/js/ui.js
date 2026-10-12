@@ -10,6 +10,7 @@ import { SIZE, MIN_PLAYERS, MAX_PLAYERS, canPlace } from './game.js';
 
 const SETUP_KEY = 'lucky-numbers.setup'; // 開始画面で選んだ人数・名前・CPU
 const TOAST_MS = 2500;
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const $ = (id) => document.getElementById(id);
 
@@ -38,12 +39,26 @@ function element(tag, { className, text, onClick, disabled } = {}) {
     return el;
 }
 
+// クローバー型のタイル（形は index.html の <symbol id="clover"> を使い回す）
+function cloverTile(number, { tag = 'div', className = '', onClick, disabled } = {}) {
+    const tile = element(tag, { className: `clover ${className}`.trim(), onClick, disabled });
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('aria-hidden', 'true');
+    const use = document.createElementNS(SVG_NS, 'use');
+    use.setAttribute('href', '#clover');
+    svg.append(use);
+    tile.append(svg, element('span', { className: 'num', text: String(number) }));
+    return tile;
+}
+
 export default class UI {
     constructor() {
         this.controller = null; // 遊んでいるゲームのコントローラー
         this.online = null;     // オンライン対戦のコントローラー（部屋に入っている間）
         this.localPlayers = null;
         this.toastTimer = null;
+        this.previousGardens = new Map(); // 前に描いた庭（新しく置かれたタイルを見分ける）
         this.bindEvents();
     }
 
@@ -121,6 +136,7 @@ export default class UI {
             saveSetup({ count: players.length, seats: players });
         }
         this.controller?.stop?.();
+        this.previousGardens.clear();
         this.localPlayers = players;
         this.controller = new LocalGameController(players, {
             onUpdate: () => this.renderGame(),
@@ -180,6 +196,7 @@ export default class UI {
         }
 
         this.showScreen('lobby');
+        this.previousGardens.clear();
         $('lobby-code').textContent = lobby.roomCode;
         const isHost = online.isHost();
         const list = $('lobby-players');
@@ -244,14 +261,16 @@ export default class UI {
         $('status').textContent = this.statusText(view);
 
         // 山札と持っているタイル
-        $('pool-count').textContent = `${view.poolCount}枚`;
-        $('pool-button').disabled = !(canAct && !view.holding && view.poolCount > 0);
+        $('pool-count').textContent = String(view.poolCount);
+        const canDraw = canAct && !view.holding && view.poolCount > 0;
+        $('pool-button').disabled = !canDraw;
+        $('pool-button').classList.toggle('active', canDraw);
         const holding = $('holding');
         holding.replaceChildren();
         if (view.holding) {
             holding.append(
-                element('div', { className: 'hint', text: view.current === view.me ? 'あなたのタイル' : `${view.current.name}のタイル` }),
-                element('div', { className: 'tile big held', text: String(holdingNumber) })
+                cloverTile(holdingNumber, { className: 'big held' }),
+                element('div', { className: 'hint', text: view.current === view.me ? 'あなたのタイル' : `${view.current.name}のタイル` })
             );
         }
         $('discard-button').classList.toggle('hidden', !(canAct && view.holding?.from === 'pool'));
@@ -260,11 +279,12 @@ export default class UI {
         const table = $('table-tiles');
         table.replaceChildren();
         if (view.table.length === 0) table.append(element('span', { className: 'hint', text: 'まだありません（タップで取れます）' }));
+        const canTake = canAct && !view.holding;
         view.table.forEach((number, index) => {
-            table.append(element('button', {
-                className: 'tile',
-                text: String(number),
-                disabled: !(canAct && !view.holding),
+            table.append(cloverTile(number, {
+                tag: 'button',
+                className: canTake ? 'takeable' : '',
+                disabled: !canTake,
                 onClick: () => this.controller.send({ type: 'take', index })
             }));
         });
@@ -294,20 +314,32 @@ export default class UI {
         container.replaceChildren();
 
         const title = element('div', { className: 'garden-title' });
-        title.append(element('span', { className: 'garden-name', text: player.name + (player.isCPU ? '（CPU）' : '') }));
+        title.append(element('span', { className: 'garden-name', text: player.name }));
         title.append(element('span', { className: 'hint', text: `${player.tileCount}/${SIZE * SIZE}` }));
         container.append(title);
+
+        // 前に描いたときから変わったマス（新しく置かれたタイル）は、ぽんと出す
+        const previous = this.previousGardens.get(player.id);
+        this.previousGardens.set(player.id, player.garden.map(r => [...r]));
 
         const grid = element('div', { className: 'grid' });
         player.garden.forEach((rowValues, row) => {
             rowValues.forEach((number, col) => {
                 const placeable = placingNumber !== null && canPlace(player.garden, row, col, placingNumber);
-                const cell = element(placeable ? 'button' : 'div', {
-                    className: ['cell', number !== null ? 'tile' : '', placeable ? 'placeable' : ''].join(' ').trim(),
-                    text: number !== null ? String(number) : '',
+                const classes = ['cell'];
+                if (placeable) classes.push('placeable');
+                if (number !== null && previous && previous[row][col] !== number) classes.push('pop');
+                const options = {
+                    tag: placeable ? 'button' : 'div',
+                    className: classes.join(' '),
                     onClick: placeable ? () => this.controller.send({ type: 'place', row, col }) : undefined
-                });
-                grid.append(cell);
+                };
+                if (number !== null) {
+                    grid.append(cloverTile(number, options));
+                } else {
+                    classes.push('empty');
+                    grid.append(element(options.tag, { className: classes.join(' '), onClick: options.onClick }));
+                }
             });
         });
         // 外枠の大きさ（残りの高さと幅）に合わせて、グリッドを正方形に収める
@@ -348,9 +380,9 @@ export default class UI {
     statusText(view) {
         if (view.result) return 'ゲーム終了';
         if (view.isMyTurn) {
-            if (!view.holding) return 'あなたの番：山札を引くか、場のタイルを取ってください';
+            if (!view.holding) return 'あなたの番：山札を引くか、場から取ってください';
             return view.holding.from === 'pool'
-                ? `${view.holding.number} を置くマスを選ぶか、場に出してください`
+                ? `${view.holding.number} を置くか、場に出してください`
                 : `${view.holding.number} を置くマスを選んでください`;
         }
         if (view.me && view.current === view.me) return '送信中…';

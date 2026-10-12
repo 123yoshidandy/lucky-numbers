@@ -1,14 +1,21 @@
 :root {
-    --bg: #eef5ec;
-    --panel: #ffffff;
-    --ink: #1d2b22;
-    --muted: #6b7a70;
-    --green: #1f5f3a;
-    --green-light: #d7ecd9;
-    --tile: #fff8e1;
-    --tile-border: #d8c48a;
-    --accent: #f2a541;
-    --danger: #c0392b;
+    --bg: #f5efe0;
+    --bg-dot: #e9e0c9;
+    --panel: #fffdf7;
+    --ink: #2b3a2e;
+    --muted: #7b8578;
+    --green: #2e6b3f;
+    --green-dark: #1f4d2c;
+    --green-light: #e3f0dc;
+    --grass: #7cb35a;
+    --grass-dark: #5f9844;
+    --soil: #9c7a58;
+    --soil-dark: #7d5e41;
+    --gold: #ffcf3f;
+    --cream: #fffaea;
+    --wood: #e6cfa2;
+    --wood-dark: #cfb07a;
+    --shadow: 0 2px 8px rgba(60, 50, 20, 0.12);
 }
 
 * {
@@ -27,9 +34,12 @@ body {
     height: 100vh;
     height: 100dvh;
     overflow: hidden;
-    background: var(--bg);
+    background:
+        radial-gradient(circle, var(--bg-dot) 1.2px, transparent 1.6px) 0 0 / 18px 18px,
+        var(--bg);
     color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    font-family: "M PLUS Rounded 1c", -apple-system, BlinkMacSystemFont, "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif;
+    font-weight: 500;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -44,16 +54,31 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: 2px 12px;
-    padding: 6px 16px;
+    padding: 6px 16px 8px;
     padding-top: max(6px, env(safe-area-inset-top));
-    background: var(--green);
+    background: linear-gradient(180deg, var(--green), var(--green-dark));
     color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 #topbar h1 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     margin: 0;
-    font-size: 17px;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
     white-space: nowrap;
+}
+
+.logo {
+    width: 26px;
+    height: 26px;
+    --leaf: #7bd36b;
+    --leaf-light: #b6eba9;
+    --stem: #5fb350;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
 }
 
 /* 手番の案内はタイトルの下に1行で出す */
@@ -61,7 +86,8 @@ body {
     order: 3;
     flex-basis: 100%;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 800;
+    color: #fff3c4;
 }
 
 #status:empty {
@@ -74,38 +100,48 @@ main {
     width: 100%;
     max-width: 960px;
     margin: 0 auto;
-    padding: 8px 16px;
-    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    padding: 10px 16px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
     overflow-y: auto;
 }
 
 .panel {
     background: var(--panel);
-    border-radius: 12px;
-    padding: 12px;
+    border-radius: 16px;
+    padding: 14px;
     margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow);
 }
 
 h2 {
-    margin: 0 0 8px;
-    font-size: 16px;
+    margin: 0 0 10px;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--green-dark);
 }
 
 .hint {
     color: var(--muted);
     font-size: 12px;
-    font-weight: normal;
+    font-weight: 500;
 }
 
 button {
     font: inherit;
-    padding: 8px 14px;
-    border: 1px solid #b9c7bd;
-    border-radius: 8px;
+    font-weight: 800;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 999px;
     background: #fff;
-    color: var(--ink);
+    color: var(--green-dark);
+    box-shadow: inset 0 0 0 2px #cfdcc8, 0 2px 0 #cfdcc8;
     cursor: pointer;
+    transition: transform 0.1s;
+}
+
+button:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: inset 0 0 0 2px #cfdcc8;
 }
 
 button:disabled {
@@ -115,27 +151,37 @@ button:disabled {
 
 button.primary {
     background: var(--green);
-    border-color: var(--green);
     color: #fff;
+    box-shadow: 0 3px 0 var(--green-dark);
+}
+
+button.primary:active:not(:disabled) {
+    box-shadow: 0 1px 0 var(--green-dark);
 }
 
 button.small {
-    padding: 4px 10px;
+    padding: 5px 12px;
     font-size: 13px;
 }
 
 #topbar button {
-    background: transparent;
-    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.12);
     color: #fff;
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.6);
 }
 
 input, select {
     font: inherit;
-    padding: 6px 8px;
-    border: 1px solid #b9c7bd;
-    border-radius: 6px;
+    padding: 7px 10px;
+    border: 2px solid #d9e3d3;
+    border-radius: 10px;
+    background: #fff;
     min-width: 0;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--grass);
 }
 
 .row {
@@ -152,8 +198,8 @@ input, select {
 .buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin: 12px 0;
+    gap: 10px;
+    margin: 14px 0;
 }
 
 /* ===== 開始画面・ロビー ===== */
@@ -176,16 +222,31 @@ input, select {
     white-space: nowrap;
 }
 
+input[type=checkbox] {
+    accent-color: var(--green);
+    width: 18px;
+    height: 18px;
+}
+
+.rules summary {
+    font-weight: 800;
+    color: var(--green-dark);
+    cursor: pointer;
+}
+
 .rules ul {
     margin: 8px 0 0;
     padding-left: 20px;
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.7;
 }
 
 #lobby-code {
     font-family: ui-monospace, Menlo, monospace;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
+    padding: 2px 10px;
+    border-radius: 8px;
+    background: var(--green-light);
 }
 
 #lobby-players {
@@ -198,8 +259,8 @@ input, select {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 0;
-    border-bottom: 1px solid #e3ebe5;
+    padding: 10px 0;
+    border-bottom: 1px dashed #dfe6d9;
 }
 
 #lobby-players li button {
@@ -208,7 +269,7 @@ input, select {
 
 .badge {
     font-size: 11px;
-    padding: 2px 6px;
+    padding: 2px 8px;
     border-radius: 999px;
     background: var(--green-light);
     color: var(--green);
@@ -216,6 +277,58 @@ input, select {
 
 .badge.muted, .offline {
     color: var(--muted);
+}
+
+/* ===== クローバー型のタイル ===== */
+
+/* 形は SVG、数字は真ん中の丸に載せる。大きさは要素の幅に合わせて文字も伸び縮みする */
+.clover {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    container-type: inline-size;
+    aspect-ratio: 1;
+    padding: 0;
+    border: none;
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+    color: var(--green-dark);
+    --leaf: #43a047;
+    --leaf-light: #7cc47f;
+    --stem: #2e7d32;
+}
+
+.clover svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 1.5px 1px rgba(30, 60, 20, 0.35));
+}
+
+.clover .num {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 50%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--cream);
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.08);
+    font-size: 30cqw;
+    font-weight: 800;
+    line-height: 1;
+}
+
+button.clover:disabled {
+    opacity: 1;
+}
+
+button.clover:active:not(:disabled) {
+    transform: scale(0.92);
+    box-shadow: none;
 }
 
 /* ===== ゲーム画面 ===== */
@@ -233,25 +346,6 @@ input, select {
     padding: 8px;
 }
 
-.tile {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--tile);
-    border: 2px solid var(--tile-border);
-    border-radius: 50%;
-    font-weight: bold;
-    color: var(--green);
-}
-
-button.tile {
-    flex: none;
-    width: 38px;
-    height: 38px;
-    padding: 0;
-    font-size: 16px;
-}
-
 /* --- 山札・持っているタイル・場 --- */
 
 #center {
@@ -265,19 +359,74 @@ button.tile {
     display: flex;
     align-items: center;
     gap: 12px;
+    min-height: 52px;
 }
 
+/* 山札は裏向きのクローバーを2枚ずらして重ね、束に見せる */
 .pool {
+    position: relative;
     flex: none;
-    width: 56px;
-    height: 44px;
+    width: 58px;
+    height: 52px;
     padding: 0;
-    border-radius: 10px;
-    background: var(--green);
-    border-color: var(--green);
-    color: #fff;
-    font-size: 13px;
-    line-height: 1.3;
+    background: none;
+    box-shadow: none;
+    --leaf: #2f5d3a;
+    --leaf-light: #46805a;
+    --stem: #24492d;
+}
+
+.pool svg {
+    position: absolute;
+    width: 46px;
+    height: 46px;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+
+.pool-back {
+    left: 8px;
+    top: 0;
+    opacity: 0.7;
+}
+
+.pool-front {
+    left: 2px;
+    top: 5px;
+}
+
+.pool-mark {
+    position: absolute;
+    left: 2px;
+    top: 5px;
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    color: #cfe8c8;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.pool-count {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    min-width: 24px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--cream);
+    color: var(--green-dark);
+    font-size: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.pool:disabled {
+    opacity: 0.55;
+}
+
+.pool.active .pool-front,
+.pool.active .pool-mark {
+    animation: nudge 1.6s ease-in-out infinite;
 }
 
 .holding {
@@ -288,43 +437,63 @@ button.tile {
     min-width: 0;
 }
 
-.tile.big {
+.clover.big {
     flex: none;
-    width: 42px;
-    height: 42px;
-    font-size: 20px;
+    width: 56px;
 }
 
-.tile.held {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(242, 165, 65, 0.35);
+.clover.held {
+    animation: float 1.8s ease-in-out infinite;
+}
+
+.clover.held svg {
+    filter: drop-shadow(0 0 4px rgba(255, 207, 63, 0.9)) drop-shadow(0 3px 2px rgba(30, 60, 20, 0.3));
 }
 
 #discard-button {
     flex: none;
 }
 
-/* 場のタイルは1行に並べ、増えたら横にスクロールする */
+/* 場は木のテーブルの上にタイルを1行に並べ、増えたら横にスクロールする */
 .table-row {
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, var(--wood), var(--wood-dark));
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .table-label {
     flex: none;
-    font-weight: bold;
-    font-size: 14px;
+    font-weight: 800;
+    font-size: 13px;
+    color: #6b4f2a;
 }
 
 .table-tiles {
     display: flex;
-    gap: 6px;
-    min-height: 38px;
+    gap: 4px;
+    min-height: 40px;
     align-items: center;
     overflow-x: auto;
     flex: 1;
     scrollbar-width: none;
+}
+
+.table-tiles .hint {
+    color: #7a5f3a;
+}
+
+.table-tiles .clover {
+    flex: none;
+    width: 40px;
+}
+
+.clover.takeable {
+    cursor: pointer;
+    animation: wiggle 2.4s ease-in-out infinite;
 }
 
 .latest-log {
@@ -336,12 +505,12 @@ button.tile {
     min-height: 1.2em;
 }
 
-/* --- 庭 --- */
+/* --- 庭（芝生の上に土の区画が並ぶ） --- */
 
 .opponents {
     flex: none;
     display: grid;
-    grid-template-columns: repeat(var(--count, 1), minmax(0, 100px));
+    grid-template-columns: repeat(var(--count, 1), minmax(0, 104px));
     justify-content: center;
     gap: 8px;
 }
@@ -350,17 +519,23 @@ button.tile {
     display: none;
 }
 
-.garden {
-    border: 2px solid transparent;
+#screen-game .garden {
+    padding: 6px;
+    background:
+        radial-gradient(circle, rgba(255, 255, 255, 0.14) 1px, transparent 1.5px) 0 0 / 10px 10px,
+        linear-gradient(160deg, var(--grass), var(--grass-dark));
+    box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.06), var(--shadow);
+    color: #fff;
 }
 
 .garden.current {
-    border-color: var(--accent);
+    outline: 3px solid var(--gold);
+    outline-offset: -1px;
 }
 
 .garden.winner {
-    border-color: var(--green);
-    background: var(--green-light);
+    outline: 3px solid var(--gold);
+    box-shadow: 0 0 0 5px rgba(255, 207, 63, 0.35), var(--shadow) !important;
 }
 
 .garden-title {
@@ -368,9 +543,15 @@ button.tile {
     justify-content: space-between;
     align-items: baseline;
     gap: 4px;
-    margin-bottom: 4px;
-    font-weight: bold;
-    font-size: 12px;
+    margin: 0 2px 4px;
+    font-weight: 800;
+    font-size: 11px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+.garden-title .hint {
+    color: #eaf6e2;
+    font-size: 11px;
 }
 
 .garden-name {
@@ -382,7 +563,7 @@ button.tile {
 .grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 3px;
+    gap: 2px;
 }
 
 /* 自分の庭は残りの高さを使い、グリッドを幅と高さの小さいほうに合わせた正方形にする */
@@ -394,7 +575,12 @@ button.tile {
 }
 
 .garden.mine .garden-title {
-    font-size: 14px;
+    font-size: 15px;
+    margin-bottom: 6px;
+}
+
+.garden.mine .garden-title .hint {
+    font-size: 13px;
 }
 
 .garden.mine .grid-fit {
@@ -409,49 +595,81 @@ button.tile {
 .garden.mine .grid {
     width: min(100cqw, 100cqh);
     height: min(100cqw, 100cqh);
-    gap: 5px;
+    gap: 4%;
+    gap: min(2.5cqw, 2.5cqh);
 }
 
 .cell {
     width: 100%;
+}
+
+/* 空いたマスは土の区画 */
+.cell.empty {
     aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    background: #f1f5f2;
-    border: 1px dashed #c9d5cc;
-    font-size: 11px;
     padding: 0;
+    border: none;
+    border-radius: 28%;
+    background: radial-gradient(circle at 40% 35%, var(--soil), var(--soil-dark));
+    box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.25);
+    transform: scale(0.82);
 }
 
-/* 入れ替えできるタイルはボタンになるので、場のタイル（button.tile）の大きさを打ち消す */
-.cell.tile {
-    width: 100%;
-    height: auto;
-    border-radius: 50%;
-    border-style: solid;
-    border-width: 1px;
+/* 置けるマスは金色に光らせる（空き区画は縁取り、タイルは光の輪） */
+.cell.empty.placeable {
+    background: radial-gradient(circle at 40% 35%, #c49a6c, #a47b52);
+    box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.25), 0 0 0 3px var(--gold);
+    cursor: pointer;
+    animation: glow 1.4s ease-in-out infinite;
 }
 
-.garden.mine .cell {
-    font-size: clamp(14px, 6cqmin, 26px);
-    border-radius: 8px;
-}
-
-.garden.mine .cell.tile {
-    border-radius: 50%;
-    border-width: 2px;
-}
-
-.cell.placeable {
-    background: #fff3dc;
-    border: 2px solid var(--accent);
+.clover.placeable {
     cursor: pointer;
 }
 
-.cell.tile.placeable {
-    background: #ffe7bf;
+.clover.placeable::before {
+    content: "";
+    position: absolute;
+    inset: 4%;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--gold), 0 0 10px 2px rgba(255, 207, 63, 0.8);
+    animation: glow 1.4s ease-in-out infinite;
+}
+
+/* 新しく置かれたタイル */
+.clover.pop {
+    animation: pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@keyframes pop {
+    0% { transform: scale(0.2) rotate(-40deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+@keyframes glow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50% { transform: translateY(-3px) rotate(4deg); }
+}
+
+@keyframes wiggle {
+    0%, 86%, 100% { transform: rotate(0); }
+    90% { transform: rotate(-8deg); }
+    95% { transform: rotate(8deg); }
+}
+
+@keyframes nudge {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before {
+        animation: none !important;
+    }
 }
 
 /* 結果は画面の下に重ねて出す（庭は見えたまま） */
@@ -461,12 +679,18 @@ button.tile {
     bottom: max(16px, env(safe-area-inset-bottom));
     transform: translateX(-50%);
     width: min(360px, calc(100% - 32px));
-    padding: 12px;
-    border-radius: 12px;
+    padding: 14px;
+    border-radius: 18px;
     background: var(--panel);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 0 3px var(--gold), 0 8px 24px rgba(0, 0, 0, 0.25);
     text-align: center;
     z-index: 15;
+    animation: rise 0.35s ease-out;
+}
+
+@keyframes rise {
+    from { transform: translate(-50%, 20px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
 }
 
 .result h2 {
@@ -484,9 +708,9 @@ button.tile {
     bottom: max(24px, env(safe-area-inset-bottom));
     transform: translateX(-50%);
     max-width: calc(100% - 32px);
-    padding: 10px 16px;
-    border-radius: 8px;
-    background: rgba(29, 43, 34, 0.92);
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: rgba(31, 77, 44, 0.94);
     color: #fff;
     font-size: 14px;
     z-index: 20;
