@@ -32,8 +32,10 @@ body {
     top: 0;
     z-index: 10;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
+    gap: 4px 12px;
     padding: 8px 16px;
     padding-top: max(8px, env(safe-area-inset-top));
     background: var(--green);
@@ -46,9 +48,15 @@ body {
     white-space: nowrap;
 }
 
+/* 手番の案内はタイトルの下に1行で出す */
 #status {
-    flex: 1;
+    order: 3;
+    flex-basis: 100%;
     font-size: 14px;
+}
+
+#status:empty {
+    display: none;
 }
 
 main {
@@ -263,6 +271,7 @@ button.tile {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 12px;
+    margin-bottom: 12px;
 }
 
 .garden {
@@ -302,6 +311,7 @@ button.tile {
 }
 
 .cell {
+    width: 100%;
     aspect-ratio: 1;
     display: flex;
     align-items: center;
@@ -313,7 +323,10 @@ button.tile {
     padding: 0;
 }
 
+/* 入れ替えできるタイルはボタンになるので、場のタイル（button.tile）の大きさを打ち消す */
 .cell.tile {
+    width: 100%;
+    height: auto;
     border-radius: 50%;
     border-style: solid;
 }

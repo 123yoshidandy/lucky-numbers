@@ -250,7 +250,7 @@ export default class UI {
         holding.replaceChildren();
         if (view.holding) {
             holding.append(
-                element('div', { className: 'hint', text: `${view.current.name}が持っているタイル` }),
+                element('div', { className: 'hint', text: view.current === view.me ? 'あなたのタイル' : `${view.current.name}のタイル` }),
                 element('div', { className: 'tile big held', text: String(holdingNumber) })
             );
         }
