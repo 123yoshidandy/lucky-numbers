@@ -81,19 +81,6 @@ body {
     filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
 }
 
-/* 手番の案内はタイトルの下に1行で出す */
-#status {
-    order: 3;
-    flex-basis: 100%;
-    font-size: 14px;
-    font-weight: 800;
-    color: #fff3c4;
-}
-
-#status:empty {
-    display: none;
-}
-
 main {
     flex: 1;
     min-height: 0;
@@ -346,7 +333,7 @@ button.clover:active:not(:disabled) {
     display: flex;
     align-items: center;
     gap: 12px;
-    min-height: 52px;
+    height: 60px; /* タイルを持っても高さを変えない（下の庭が上下に動かないように） */
 }
 
 /* 山札は裏向きのクローバーを2枚ずらして重ね、束に見せる */
@@ -455,14 +442,15 @@ button.clover:active:not(:disabled) {
 .table-label {
     flex: none;
     font-weight: 800;
-    font-size: 13px;
+    font-size: 11px;
+    line-height: 1.25;
     color: #6b4f2a;
 }
 
 .table-tiles {
     display: flex;
     gap: 4px;
-    min-height: 40px;
+    height: 40px;
     align-items: center;
     overflow-x: auto;
     flex: 1;
@@ -483,13 +471,40 @@ button.clover:active:not(:disabled) {
     animation: wiggle 2.4s ease-in-out infinite;
 }
 
-.latest-log {
-    font-size: 12px;
-    color: var(--muted);
+/* 2行のログ：直前の出来事（1行目）と、今の案内（2行目）。高さは変えない */
+.turn-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.latest-log, .guide {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-height: 1.2em;
+}
+
+.latest-log {
+    height: 17px;
+    font-size: 12px;
+    line-height: 17px;
+    color: var(--muted);
+}
+
+.guide {
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 26px;
+    color: var(--ink);
+}
+
+.guide.my-turn {
+    background: #fff1bf;
+    color: var(--green-dark);
+    box-shadow: inset 0 0 0 1.5px var(--gold);
 }
 
 /* --- 庭（芝生の上に土の区画が並ぶ） --- */
@@ -732,6 +747,49 @@ button.clover:active:not(:disabled) {
 
 /* ===== 上部バーのボタン ===== */
 
+/* ホームのアイコン（線で描いた家） */
+.home-icon {
+    width: 18px;
+    height: 18px;
+    display: block;
+    margin: 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+/* ===== トップ画面のタイトル ===== */
+
+/* 上部のバーは出さず、絵の上に中央揃えで大きく出す */
+#screen-setup {
+    padding-top: env(safe-area-inset-top);
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 14px 0 2px;
+    font-size: clamp(28px, 8.5vw, 36px);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--green-dark);
+    text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8), 0 3px 8px rgba(31, 77, 44, 0.18);
+}
+
+.title-logo {
+    width: 1.15em;
+    height: 1.15em;
+    --leaf: #4caf50;
+    --leaf-light: #8fd18f;
+    --stem: #2e7d32;
+    filter: drop-shadow(0 2px 2px rgba(30, 60, 20, 0.3));
+    transform: rotate(-12deg);
+}
+
 .topbar-buttons {
     display: flex;
     gap: 8px;
@@ -775,37 +833,6 @@ button.link {
     background: radial-gradient(closest-side, rgba(255, 244, 196, 0.95), rgba(255, 244, 196, 0));
 }
 
-.hero-pool {
-    position: relative;
-    width: 64px;
-    height: 64px;
-    margin-bottom: 24px;
-    --leaf: #2f5d3a;
-    --leaf-light: #46805a;
-    --stem: #24492d;
-    transform: rotate(-8deg);
-}
-
-.hero-pool svg {
-    position: absolute;
-    width: 54px;
-    height: 54px;
-    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
-}
-
-.hero-pool .pool-front {
-    left: 0;
-    top: 8px;
-}
-
-.hero-pool .pool-mark {
-    width: 54px;
-    height: 54px;
-    font-size: 22px;
-    left: 0;
-    top: 8px;
-}
-
 /* 絵の庭の寸法（浮かべるタイルの位置をマスに合わせるため） */
 .hero-board {
     --garden: min(60vw, 240px, 33dvh); /* 背の低い画面でも、開始ボタンまで1画面に収める */
@@ -813,7 +840,7 @@ button.link {
     --gap: 4px;
     --cell: calc((var(--garden) - 2 * var(--pad) - 3 * var(--gap)) / 4);
     position: relative;
-    padding: 20px 0 0 22px;
+    padding: 20px 22px 0; /* 縦の矢印の分の余白を左右に付けて、庭を中央にそろえる */
 }
 
 .hero-axis {

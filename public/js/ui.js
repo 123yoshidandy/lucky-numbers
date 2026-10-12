@@ -50,10 +50,11 @@ export default class UI {
             $(`screen-${screen}`).classList.toggle('hidden', screen !== name);
         });
         // ホームと遊び方のボタンは、ロビーとゲーム中だけ出す（開始画面には「遊び方を見る」がある）
+        // トップ画面（開始画面・オンラインの入口）では上部のバーを出さない（タイトルは絵の上に出す）
         const onTitle = name === 'setup' || name === 'online';
+        $('topbar').classList.toggle('hidden', onTitle);
         $('menu-button').classList.toggle('hidden', onTitle);
         $('help-button').classList.toggle('hidden', onTitle);
-        if (name !== 'game') $('status').textContent = '';
     }
 
     showSetup() {
@@ -246,7 +247,10 @@ export default class UI {
         const holdingNumber = view.holding?.number ?? null;
         const canAct = view.isMyTurn;
 
-        $('status').textContent = this.statusText(view);
+        // 2行のログ：直前の出来事と、今の案内（自分の番なら目立たせる）
+        $('latest-log').textContent = view.logs.at(-1) ?? '';
+        $('guide').textContent = this.guideText(view);
+        $('guide').classList.toggle('my-turn', view.isMyTurn);
 
         // 山札と持っているタイル
         $('pool-count').textContent = String(view.poolCount);
@@ -268,7 +272,6 @@ export default class UI {
         // 場
         const table = $('table-tiles');
         table.replaceChildren();
-        if (view.table.length === 0) table.append(element('span', { className: 'hint', text: 'まだありません（タップで取れます）' }));
         const canTake = canAct && !view.holding;
         view.table.forEach((number, index) => {
             table.append(cloverTile(number, {
@@ -290,7 +293,6 @@ export default class UI {
 
         this.renderResult(view);
 
-        $('latest-log').textContent = view.logs.at(-1) ?? '';
 
         animateChanges(this.lastView, view, layout);
         this.lastView = view;
@@ -386,16 +388,17 @@ export default class UI {
         result.append(buttons);
     }
 
-    statusText(view) {
+    // 今の案内（ログの2行目）
+    guideText(view) {
         if (view.result) return 'ゲーム終了';
         if (view.isMyTurn) {
-            if (!view.holding) return 'あなたの番：山札を引くか、場から取ってください';
+            if (!view.holding) return 'あなたの番！ 山札を引くか、場から取ろう';
             return view.holding.from === 'pool'
-                ? `${view.holding.number} を置くか、場に出してください`
-                : `${view.holding.number} を置くマスを選んでください`;
+                ? `${view.holding.number} を光るマスに置くか、場に出そう`
+                : `${view.holding.number} を光るマスに置こう`;
         }
         if (view.me && view.current === view.me) return '送信中…';
-        return `${view.current.name}の番です`;
+        return `${view.current.name}の番`;
     }
 
     // ===== ホーム =====

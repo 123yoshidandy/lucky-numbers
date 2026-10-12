@@ -31,10 +31,14 @@
 
     <header id="topbar">
         <h1><svg class="logo" viewBox="0 0 100 100" aria-hidden="true"><use href="#clover"/></svg>Lucky Numbers</h1>
-        <div id="status" aria-live="polite"></div>
         <div class="topbar-buttons">
             <button id="help-button" class="small icon" aria-label="遊び方">？</button>
-            <button id="menu-button" class="small hidden" aria-label="ホームに戻る">🏠 ホーム</button>
+            <!-- ホーム（開始画面に戻る） -->
+            <button id="menu-button" class="small icon hidden" aria-label="ホームに戻る">
+                <svg class="home-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 10.5 12 4l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5H15v-5.5h-6v5.5H5.5A1.5 1.5 0 0 1 4 19z"/>
+                </svg>
+            </button>
         </div>
     </header>
 
@@ -43,12 +47,9 @@
         <section id="screen-setup" class="screen">
             <!-- ゲーム画面をイメージした絵：最初に置かれる斜めの4枚が埋まった庭と、空いたマスへ置こうとしているタイル
                  （盤面は data-garden、_ は空き。data-target のマスに data-number のタイルを浮かべる） -->
+            <!-- トップ画面では上部のバーを出さず、タイトルを絵の上に大きく出す -->
+            <h1 class="title"><svg class="title-logo" viewBox="0 0 100 100" aria-hidden="true"><use href="#clover"/></svg>Lucky Numbers</h1>
             <div class="hero" aria-hidden="true">
-                <div class="hero-pool">
-                    <svg class="pool-back" viewBox="0 0 100 100"><use href="#clover"/></svg>
-                    <svg class="pool-front" viewBox="0 0 100 100"><use href="#clover"/></svg>
-                    <span class="pool-mark">?</span>
-                </div>
                 <div class="hero-board">
                     <div class="hero-axis hero-axis-x">小 → 大</div>
                     <div class="hero-axis hero-axis-y">小 → 大</div>
@@ -56,7 +57,7 @@
                     <div class="hero-held" data-number="6"></div>
                 </div>
             </div>
-            <p class="tagline">クローバーを<strong>順番どおり</strong>に並べて、<strong>庭を埋めよう！</strong></p>
+            <p class="tagline">クローバーを並べて<strong>庭を埋めよう！</strong></p>
 
             <div class="panel">
             <h2>ゲームの準備</h2>
@@ -124,10 +125,14 @@
                     <button id="discard-button" class="hidden">場に出す</button>
                 </div>
                 <div class="table-row">
-                    <span class="table-label">場</span>
+                    <span class="table-label">場に出た<br>クローバー</span>
                     <div id="table-tiles" class="table-tiles"></div>
                 </div>
-                <div id="latest-log" class="latest-log" aria-live="polite"></div>
+                <!-- 2行のログ：直前の出来事と、今の案内（自分の番なら目立たせる） -->
+                <div class="turn-info">
+                    <div id="latest-log" class="latest-log"></div>
+                    <div id="guide" class="guide" aria-live="polite"></div>
+                </div>
             </div>
             <div id="my-garden" class="garden mine panel"></div>
             <div id="result" class="result hidden"></div>
