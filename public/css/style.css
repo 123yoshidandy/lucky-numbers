@@ -760,6 +760,54 @@ button.clover:active:not(:disabled) {
     stroke-linecap: round;
 }
 
+/* 効果音と BGM の切り替え（線のアイコン。オフのときは斜線を出す） */
+.line-icon {
+    width: 18px;
+    height: 18px;
+    display: block;
+    margin: 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.sound-toggle .sound-off {
+    display: none;
+}
+
+.sound-toggle.off .sound-off {
+    display: inline;
+}
+
+.sound-toggle.off .sound-on {
+    display: none;
+}
+
+.sound-toggle.off {
+    opacity: 0.6;
+}
+
+/* トップ画面では「遊び方を見る」と同じ行の右端に置く（画面の高さを増やさない） */
+.setup-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.title-sound {
+    display: flex;
+    gap: 6px;
+}
+
+.title-sound button {
+    background: rgba(255, 255, 255, 0.75);
+    color: var(--green-dark);
+    box-shadow: inset 0 0 0 1.5px #cfdcc8;
+}
+
 /* ===== トップ画面のタイトル ===== */
 
 /* 上部のバーは出さず、絵の上に中央揃えで大きく出す */

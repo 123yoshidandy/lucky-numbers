@@ -8,7 +8,8 @@ import OnlineGameController, { loadOnlineSession } from './online-controller.js'
 import { getServerUrl } from './online-config.js';
 import { SIZE, MIN_PLAYERS, MAX_PLAYERS, canPlace } from './game.js';
 import { element, cloverTile, renderPictureGarden } from './tiles.js';
-import { captureLayout, animateChanges } from './tile-motion.js';
+import { captureLayout, detectChanges, animateChanges, FLY_MS, SECOND_DELAY_MS } from './tile-motion.js';
+import { unlockSound, playEffect, toggleSound, getSoundSettings, onSoundSettingsChange } from './sound.js';
 import NetplayClient from './netplay/netplay-client.mjs';
 
 const SETUP_KEY = 'lucky-numbers.setup'; // 開始画面で選んだ人数・名前・CPU
@@ -307,9 +308,48 @@ export default class UI {
         this.renderResult(view);
 
 
-        animateChanges(this.lastView, view, layout);
+        const changes = detectChanges(this.lastView, view);
+        animateChanges(changes, layout);
+        this.playSounds(changes, this.lastView, view);
         this.lastView = view;
         this.scheduleAutoDraw(view);
+    }
+
+    // 起きたことに合わせて効果音を鳴らす（置く・場に出す音は、タイルが着く頃に鳴らす）。相手や CPU の手は小さめ
+    playSounds(changes, previous, view) {
+        if (!previous) return;
+        const land = (FLY_MS / 1000) * 0.9;
+        changes.forEach(change => {
+            const quiet = change.playerId !== view.me?.id;
+            if (change.type === 'draw' || change.type === 'take') {
+                playEffect(change.type, change.number, { quiet });
+            } else if (change.type === 'discard') {
+                playEffect('discard', change.number, { quiet, delay: land });
+            } else if (change.type === 'place') {
+                playEffect('place', change.number, { quiet, delay: land });
+                if (change.replaced !== null) playEffect('replaced', change.replaced, { quiet, delay: land + SECOND_DELAY_MS / 1000 });
+            }
+        });
+        // 自分の番が来た（手番が自分に移ったときだけ。返事待ちから戻ったときは鳴らさない）
+        if (view.phase === 'play' && view.me && view.current === view.me && previous.currentPlayerId !== view.currentPlayerId) {
+            playEffect('myTurn', null, { delay: land + 0.1 });
+        }
+        // 決着（観戦しているときは、勝ちの音）
+        if (view.result && !previous.result) {
+            const won = !view.me || view.result.winnerIds.includes(view.me.id);
+            playEffect(won ? 'win' : 'lose', null, { delay: land + 0.2 });
+        }
+    }
+
+    // 効果音と BGM の切り替えボタンの表示を、設定に合わせる（上部のバーとトップ画面の両方）
+    renderSoundToggles(settings = getSoundSettings()) {
+        document.querySelectorAll('.sound-toggle').forEach(button => {
+            const on = settings[button.dataset.kind];
+            const label = button.dataset.kind === 'bgm' ? 'BGM' : '効果音';
+            button.classList.toggle('off', !on);
+            button.setAttribute('aria-pressed', String(on));
+            button.setAttribute('aria-label', `${label}を${on ? 'オフ' : 'オン'}にする`);
+        });
     }
 
     // 自分の番で、できることが「山札を引く」だけ（場にクローバーがない）なら、少し間を置いて自動で引く
@@ -492,6 +532,15 @@ export default class UI {
         });
         $('menu-button').addEventListener('click', () => this.goHome());
         $('pool-button').addEventListener('click', () => this.controller?.send({ type: 'draw' }));
+
+        // 音は、ブラウザの制限で、最初に画面を触ったときから鳴らせる（触るたびに、止まっていれば再開する）
+        document.addEventListener('pointerdown', unlockSound, true);
+        document.addEventListener('keydown', unlockSound, true);
+        document.querySelectorAll('.sound-toggle').forEach(button => {
+            button.addEventListener('click', () => toggleSound(button.dataset.kind));
+        });
+        onSoundSettingsChange(settings => this.renderSoundToggles(settings));
+        this.renderSoundToggles();
         $('discard-button').addEventListener('click', () => this.controller?.send({ type: 'discard' }));
 
         // 遊び方（上部の「？」と開始画面のボタン）。外側をタップしても閉じる

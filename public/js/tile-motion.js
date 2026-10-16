@@ -11,8 +11,8 @@
 
 import { cloverTile } from './tiles.js';
 
-const FLY_MS = 480;
-const SECOND_DELAY_MS = 140; // 入れ替えで外したタイルは、少し遅れて場へ
+export const FLY_MS = 480;
+export const SECOND_DELAY_MS = 140; // 入れ替えで外したタイルは、少し遅れて場へ
 
 const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -40,41 +40,57 @@ export function captureLayout() {
     };
 }
 
-// 前のビューと今のビューを比べて、動いたタイルを飛ばす
-export function animateChanges(previous, next, layout) {
-    if (!previous || !layout || reducedMotion()) return;
+// 前のビューと今のビューを比べて、何が起きたかを返す（タイルの動きと効果音の両方で使う）
+// { type: 'draw' | 'take' | 'place' | 'discard', number, playerId, index?, row?, col?, replaced? }
+export function detectChanges(previous, next) {
+    if (!previous || !next) return [];
+    const playerId = previous.currentPlayerId;
 
     // 手に取った（山札から引いた／場から取った）
     if (!previous.holding && next.holding) {
         const { number, from } = next.holding;
-        if (from === 'pool') {
-            fly({ number, from: layout.pool, to: heldElement(), faceDown: true });
-        } else {
-            const index = firstDifference(previous.table, next.table);
-            fly({ number, from: layout.table[index], to: heldElement() });
-        }
-        return;
+        if (from === 'pool') return [{ type: 'draw', number, playerId: next.currentPlayerId }];
+        return [{ type: 'take', number, playerId: next.currentPlayerId, index: firstDifference(previous.table, next.table) }];
     }
 
     // 手放した（庭に置いた／場に出した）
     if (previous.holding && !next.holding) {
-        const playerId = previous.currentPlayerId;
         const before = previous.players.find(p => p.id === playerId)?.garden;
         const after = next.players.find(p => p.id === playerId)?.garden;
         const changed = before && after ? changedCell(before, after) : null;
-        const lastTable = () => tableElements().at(-1);
-
-        if (!changed) {
-            fly({ number: previous.holding.number, from: layout.held, to: lastTable() });
-            return;
-        }
+        const { number } = previous.holding;
+        if (!changed) return [{ type: 'discard', number, playerId }];
         const { row, col } = changed;
-        fly({ number: previous.holding.number, from: layout.held, to: document.querySelector(cellSelector(playerId, row, col)) });
-        const replaced = before[row][col];
-        if (replaced !== null) {
-            fly({ number: replaced, from: layout.cells.get(`${playerId}-${row}-${col}`), to: lastTable(), delay: SECOND_DELAY_MS });
-        }
+        return [{ type: 'place', number, playerId, row, col, replaced: before[row][col] }];
     }
+    return [];
+}
+
+// 起きたことに合わせて、動いたタイルを飛ばす
+export function animateChanges(changes, layout) {
+    if (!layout || reducedMotion()) return;
+    const lastTable = () => tableElements().at(-1);
+    changes.forEach(change => {
+        switch (change.type) {
+            case 'draw':
+                fly({ number: change.number, from: layout.pool, to: heldElement(), faceDown: true });
+                break;
+            case 'take':
+                fly({ number: change.number, from: layout.table[change.index], to: heldElement() });
+                break;
+            case 'discard':
+                fly({ number: change.number, from: layout.held, to: lastTable() });
+                break;
+            case 'place': {
+                const { playerId, row, col } = change;
+                fly({ number: change.number, from: layout.held, to: document.querySelector(cellSelector(playerId, row, col)) });
+                if (change.replaced !== null) {
+                    fly({ number: change.replaced, from: layout.cells.get(`${playerId}-${row}-${col}`), to: lastTable(), delay: SECOND_DELAY_MS });
+                }
+                break;
+            }
+        }
+    });
 }
 
 function firstDifference(before, after) {

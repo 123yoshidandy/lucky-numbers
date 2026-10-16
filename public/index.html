@@ -32,6 +32,22 @@
     <header id="topbar">
         <h1><svg class="logo" viewBox="0 0 100 100" aria-hidden="true"><use href="#clover"/></svg>Lucky Numbers</h1>
         <div class="topbar-buttons">
+            <!-- 効果音と BGM の切り替え（トップ画面にも同じものを置く） -->
+            <button class="small icon sound-toggle" data-kind="effects" aria-label="効果音">
+                <svg class="line-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/>
+                    <path class="sound-on" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/>
+                    <path class="sound-off" d="M16 9.5l5 5M21 9.5l-5 5"/>
+                </svg>
+            </button>
+            <button class="small icon sound-toggle" data-kind="bgm" aria-label="BGM">
+                <svg class="line-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 17.5V6l10-2v11.5"/>
+                    <circle cx="6.5" cy="17.5" r="2.5"/>
+                    <circle cx="16.5" cy="15.5" r="2.5"/>
+                    <path class="sound-off" d="M3.5 3.5l17 17"/>
+                </svg>
+            </button>
             <button id="help-button" class="small icon" aria-label="遊び方">？</button>
             <!-- ホーム（開始画面に戻る） -->
             <button id="menu-button" class="small icon hidden" aria-label="ホームに戻る">
@@ -74,7 +90,27 @@
                 <button id="start-local" class="primary">ゲーム開始</button>
                 <button id="open-online">オンラインで遊ぶ</button>
             </div>
-            <button id="open-help" class="link">📖 遊び方を見る</button>
+            <!-- 遊び方と、効果音・BGM の切り替えは同じ行に並べる（画面の高さを増やさない） -->
+            <div class="setup-footer">
+                <button id="open-help" class="link">📖 遊び方を見る</button>
+                <div class="title-sound">
+                    <button class="small icon sound-toggle" data-kind="effects" aria-label="効果音">
+                        <svg class="line-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/>
+                            <path class="sound-on" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M18 7a7 7 0 0 1 0 10"/>
+                            <path class="sound-off" d="M16 9.5l5 5M21 9.5l-5 5"/>
+                        </svg>
+                    </button>
+                    <button class="small icon sound-toggle" data-kind="bgm" aria-label="BGM">
+                        <svg class="line-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M9 17.5V6l10-2v11.5"/>
+                            <circle cx="6.5" cy="17.5" r="2.5"/>
+                            <circle cx="16.5" cy="15.5" r="2.5"/>
+                            <path class="sound-off" d="M3.5 3.5l17 17"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
             </div>
         </section>
 
