@@ -12,7 +12,7 @@ describe('オンライン対戦（ゲームの定義）', () => {
     it('部屋を作ると部屋番号とトークンが届き、参加者はロビーで互いを見られる', async () => {
         const server = createTestServer(game);
         const [a, b] = await server.createRoom(['あき', 'はる']);
-        expect(a.last('joined').roomCode).toMatch(/^\d{5}$/);
+        expect(a.last('joined').roomCode).toMatch(/^\d{4}$/);
         expect(b.last('joined').seat).toBe(1);
         expect(a.last('lobby').players.map(p => p.name)).toEqual(['あき', 'はる']);
         expect(JSON.stringify(b.last('lobby'))).not.toContain(a.last('joined').token);

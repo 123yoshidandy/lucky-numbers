@@ -9,6 +9,7 @@ import { getServerUrl } from './online-config.js';
 import { SIZE, MIN_PLAYERS, MAX_PLAYERS, canPlace } from './game.js';
 import { element, cloverTile, renderPictureGarden } from './tiles.js';
 import { captureLayout, animateChanges } from './tile-motion.js';
+import NetplayClient from './netplay/netplay-client.mjs';
 
 const SETUP_KEY = 'lucky-numbers.setup'; // 開始画面で選んだ人数・名前・CPU
 const TOAST_MS = 2500;
@@ -42,6 +43,9 @@ export default class UI {
         this.lastView = null;              // 前に描いたビュー（動いたタイルを見分ける）
         this.bindEvents();
         this.renderPictures();
+        // 部屋番号の桁数は共通部品に合わせる
+        $('room-code').maxLength = NetplayClient.ROOM_CODE_LENGTH;
+        $('room-code').placeholder = `${NetplayClient.ROOM_CODE_LENGTH}桁の数字`;
     }
 
     // ===== 画面の切り替え =====
@@ -174,7 +178,7 @@ export default class UI {
         const name = $('online-name').value.trim();
         const code = $('room-code').value.trim();
         if (!name) return this.toast('名前を入れてください');
-        if (!/^\d{5}$/.test(code)) return this.toast('部屋番号（数字5桁）を入れてください');
+        if (!NetplayClient.isRoomCode(code)) return this.toast(`部屋番号（数字${NetplayClient.ROOM_CODE_LENGTH}桁）を入れてください`);
         try {
             await this.connectOnline().joinRoom(code, name);
         } catch (error) {
