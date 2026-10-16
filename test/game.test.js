@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import Game, { canPlace, validPlacements, countTiles, SIZE } from '../public/js/game.js';
 import { createGameView } from '../public/js/game-view.js';
+import { runCpuStep } from '../public/js/cpu-player.js';
 
 const PLAYERS = [{ name: 'あき' }, { name: 'はる' }];
 
@@ -122,6 +123,47 @@ describe('手番', () => {
         expect(game.applyCommand(0, { type: 'place', row: 0, col: 1 })).toBe(false);
         expect(game.applyCommand(0, { type: 'draw' })).toBe(false);
         expect(game.commands).toEqual([{ playerId: 0, type: 'draw' }]);
+    });
+});
+
+describe('山札から引くタイル', () => {
+    const withOneAndTwenty = [[1, 0, 0, 0], [0, 6, 0, 0], [0, 0, 11, 0], [0, 0, 0, 20]];
+    const withoutEnds = [[2, 0, 0, 0], [0, 6, 0, 0], [0, 0, 11, 0], [0, 0, 0, 18]];
+
+    it('すでに 1 を置いている人は、1 を飛ばして次のタイルを引く（1 は山札に残る）', () => {
+        const game = createGame({ pool: [9, 5, 1], gardens: [withOneAndTwenty] });
+        game.applyCommand(0, { type: 'draw' });
+        expect(game.holding.number).toBe(5);
+        expect(game.pool).toEqual([9, 1]);
+    });
+
+    it('すでに 20 を置いている人は、20 を飛ばす（1 と 20 が続いていても飛ばす）', () => {
+        const game = createGame({ pool: [9, 1, 20], gardens: [withOneAndTwenty] });
+        game.applyCommand(0, { type: 'draw' });
+        expect(game.holding.number).toBe(9);
+        expect(game.pool).toEqual([1, 20]);
+    });
+
+    it('1・20 を置いていない人は、そのまま一番上を引く', () => {
+        const game = createGame({ pool: [9, 5, 1], gardens: [withoutEnds] });
+        game.applyCommand(0, { type: 'draw' });
+        expect(game.holding.number).toBe(1);
+    });
+
+    it('飛ばすタイルしか残っていなければ、一番上を引く', () => {
+        const game = createGame({ pool: [20, 1], gardens: [withOneAndTwenty] });
+        game.applyCommand(0, { type: 'draw' });
+        expect(game.holding.number).toBe(1);
+        expect(game.pool).toEqual([20]);
+    });
+
+    it('飛ばして引いても、記録から同じゲームを再現できる', () => {
+        const players = [{ name: 'a', isCPU: true }, { name: 'b', isCPU: true }];
+        const game = new Game(players, { seed: 11 });
+        for (let i = 0; i < 400 && game.phase === 'play'; i++) runCpuStep(game);
+        const replayed = Game.replay(players, { seed: 11 }, game.commands);
+        expect(replayed.players.map(p => p.garden)).toEqual(game.players.map(p => p.garden));
+        expect(replayed.pool).toEqual(game.pool);
     });
 });
 

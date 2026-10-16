@@ -7,6 +7,7 @@
  * - 1〜20 の数字タイルをプレイヤーの人数分使う。各自 4×4 の庭を持つ
  * - 最初に4枚引き、小さい順に左上から右下への斜めに置く
  * - 手番では「山札から1枚引く」か「場（表向き）から1枚取る」
+ *   - すでに 1・20 を置いている人は、山札から 1・20 を引かない（飛ばして次のタイルを引く）
  *   - 引いたタイルは庭に置くか、場に捨てる。場から取ったタイルは必ず庭に置く
  *   - 空いたマスに置くか、置いてあるタイルと入れ替える（入れ替えたタイルは場に出す）
  *   - 庭の各行は左から右へ、各列は上から下へ、数字が大きくなるように置く（同じ数字は並べられない）
@@ -132,9 +133,21 @@ export default class Game {
     draw() {
         if (this.holding) return this.reject('持っているタイルを先に置いてください');
         if (this.pool.length === 0) return this.reject('山札がありません');
-        this.holding = { number: this.pool.pop(), from: 'pool' };
-        this.log(`${this.getCurrentPlayer().name}が山札から ${this.holding.number} を引きました`);
+        const [number] = this.pool.splice(this.drawIndex(this.getCurrentPlayer()), 1);
+        this.holding = { number, from: 'pool' };
+        this.log(`${this.getCurrentPlayer().name}が山札から ${number} を引きました`);
         return true;
+    }
+
+    // 山札のどこから引くか。すでに 1・20 を置いている人は、1・20 を飛ばして上から引く（引いても場に出すしかなく、つまらないため）
+    // 飛ばしたタイルは山札に残る。飛ばすタイルしか残っていなければ、一番上を引く
+    drawIndex(player) {
+        const placed = player.garden.flat();
+        const skip = [1, MAX_NUMBER].filter(number => placed.includes(number));
+        for (let i = this.pool.length - 1; i >= 0; i--) {
+            if (!skip.includes(this.pool[i])) return i;
+        }
+        return this.pool.length - 1;
     }
 
     take(index) {
