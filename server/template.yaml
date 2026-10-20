@@ -2,24 +2,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Lucky Numbers online play (API Gateway WebSocket + Lambda + DynamoDB)
 
-Parameters:
-  BudgetEmail:
-    Type: String
-    Default: ''
-    Description: Email address for the monthly cost alert (leave empty to skip creating the budget)
-  BudgetEmail2:
-    Type: String
-    Default: ''
-    Description: Second email address for the monthly cost alert (optional)
-  BudgetLimitUsd:
-    Type: Number
-    Default: 1
-    Description: Monthly cost (USD) of the whole account that triggers the alert
-
-Conditions:
-  CreateBudget: !Not [!Equals [!Ref BudgetEmail, '']]
-  HasSecondBudgetEmail: !Not [!Equals [!Ref BudgetEmail2, '']]
-
 Resources:
   # 部屋（ROOM#コード）と接続（CONN#接続ID）を入れるテーブル。使った分だけの課金で、expiresAt を過ぎると消える
   Table:
@@ -116,46 +98,6 @@ Resources:
       FunctionName: !Ref GameFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*
-
-  # アカウント全体の今月の料金が上限を超えた（超えそうな）ときにメールで知らせる
-  MonthlyBudget:
-    Type: AWS::Budgets::Budget
-    Condition: CreateBudget
-    Properties:
-      Budget:
-        BudgetName: lucky-numbers-online-monthly
-        BudgetType: COST
-        TimeUnit: MONTHLY
-        BudgetLimit:
-          Amount: !Ref BudgetLimitUsd
-          Unit: USD
-      NotificationsWithSubscribers:
-        - Notification:
-            NotificationType: ACTUAL
-            ComparisonOperator: GREATER_THAN
-            Threshold: 100
-            ThresholdType: PERCENTAGE
-          Subscribers:
-            - SubscriptionType: EMAIL
-              Address: !Ref BudgetEmail
-            - !If
-              - HasSecondBudgetEmail
-              - SubscriptionType: EMAIL
-                Address: !Ref BudgetEmail2
-              - !Ref AWS::NoValue
-        - Notification:
-            NotificationType: FORECASTED
-            ComparisonOperator: GREATER_THAN
-            Threshold: 100
-            ThresholdType: PERCENTAGE
-          Subscribers:
-            - SubscriptionType: EMAIL
-              Address: !Ref BudgetEmail
-            - !If
-              - HasSecondBudgetEmail
-              - SubscriptionType: EMAIL
-                Address: !Ref BudgetEmail2
-              - !Ref AWS::NoValue
 
 Outputs:
   WebSocketUrl:

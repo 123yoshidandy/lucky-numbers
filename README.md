@@ -93,7 +93,6 @@ API Gateway（WebSocket）・Lambda・DynamoDB を AWS SAM で作ります（東
 
 - 部屋は最後の操作から2日、ログは7日で自動的に消える
 - 想定外のアクセスに備えて、受け付けるリクエストの数に上限を設けている
-- 料金の通知（AWS Budgets）を任意で作れる。アカウント全体の今月の料金が上限（既定は1ドル）を超えたとき・超えそうなときにメールで知らせる（同じアカウントに別の通知があれば不要）
 
 ### デプロイ
 
@@ -101,8 +100,6 @@ AWS SAM CLI と AWS CLI が必要です。プロフィールは環境変数で�
 
 ```bash
 AWS_PROFILE=<プロフィール名> npm run deploy:server
-# 料金の通知も作るとき
-AWS_PROFILE=<プロフィール名> npm run deploy:server -- --parameter-overrides "BudgetEmail=<通知先>"
 ```
 
 デプロイ後に出力される `WebSocketUrl` を、`public/js/online-config.js` の `DEPLOYED_SERVER_URL` に書きます。
