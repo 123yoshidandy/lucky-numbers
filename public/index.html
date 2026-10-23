@@ -116,12 +116,12 @@
 
         <!-- オンライン対戦の入口 -->
         <section id="screen-online" class="screen panel hidden">
-            <h2>オンライン対戦</h2>
+            <h2 id="online-title">オンライン対戦</h2>
             <label class="row">名前 <input id="online-name" maxlength="12" autocomplete="nickname"></label>
-            <div class="buttons">
+            <div class="buttons not-invited">
                 <button id="create-room" class="primary">部屋を作る</button>
             </div>
-            <label class="row">部屋番号 <input id="room-code" inputmode="numeric" maxlength="4" placeholder="4桁の数字"></label>
+            <label class="row not-invited">部屋番号 <input id="room-code" inputmode="numeric" maxlength="4" placeholder="4桁の数字"></label>
             <div class="buttons">
                 <button id="join-room" class="primary">参加する</button>
                 <button id="back-to-setup">戻る</button>

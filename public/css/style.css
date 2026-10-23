@@ -182,6 +182,11 @@ input:focus, select:focus {
     flex: 1;
 }
 
+/* 招待URLで開いたときは、名前と「参加する」だけにする */
+#screen-online.invited .not-invited {
+    display: none;
+}
+
 .buttons {
     display: flex;
     flex-wrap: wrap;

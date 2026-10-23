@@ -34,6 +34,19 @@ function saveSetup(setup) {
     }
 }
 
+// オンラインで名乗る名前（前にオンラインで使った名前か、開始画面の1人目の名前）。既定の「あなた」は名前として使わない
+function knownOnlineName() {
+    const name = loadOnlineSession()?.name ?? loadSetup()?.seats?.[0]?.name;
+    return name && name !== 'あなた' ? name : null;
+}
+
+// 招待URLの ?room= を消しておく（再読み込みで、また参加しようとしないように）
+function clearRoomUrl() {
+    const url = new URL(location.href);
+    url.searchParams.delete('room');
+    history.replaceState(null, '', url);
+}
+
 export default class UI {
     constructor() {
         this.controller = null; // 遊んでいるゲームのコントローラー
@@ -69,11 +82,25 @@ export default class UI {
         this.showScreen('setup');
     }
 
-    showOnlineMenu({ roomCode = '' } = {}) {
-        const session = loadOnlineSession();
-        $('online-name').value = session?.name ?? loadSetup()?.seats?.[0]?.name ?? '';
+    // invited: 招待URLで開いたとき（名前と「参加する」だけにする）
+    showOnlineMenu({ roomCode = '', invited = false } = {}) {
+        $('online-name').value = knownOnlineName() ?? '';
         $('room-code').value = roomCode;
+        $('screen-online').classList.toggle('invited', invited);
+        $('online-title').textContent = invited ? `部屋 ${roomCode} に参加` : 'オンライン対戦';
         this.showScreen('online');
+        if (invited) $('online-name').focus();
+    }
+
+    isInviteScreenShown() {
+        const screen = $('screen-online');
+        return !screen.classList.contains('hidden') && screen.classList.contains('invited');
+    }
+
+    // 招待URLで開いたら、名前がわかっていればそのまま参加する（わからなければ名前だけ聞く）
+    async openInvite(roomCode) {
+        this.showOnlineMenu({ roomCode, invited: true });
+        if (knownOnlineName()) await this.joinRoom();
     }
 
     // 前回入っていた部屋があれば、自動で戻る
@@ -157,7 +184,11 @@ export default class UI {
                 if (this.controller === this.online && this.online.view) this.renderGame();
             },
             onLobby: (lobby) => this.onLobby(lobby),
-            onError: (message) => this.toast(message),
+            onError: (message) => {
+                this.toast(message);
+                // 招待の部屋に入れなければ（部屋がもうないなど）、いつもの入口に戻す
+                if (this.isInviteScreenShown()) this.showOnlineMenu();
+            },
             onConnectionChange: (connected) => {
                 if (!connected) this.toast('サーバーとの接続が切れました。再接続しています…');
             }
@@ -248,10 +279,7 @@ export default class UI {
         this.online?.leave();
         if (this.controller === this.online) this.controller = null;
         this.online = null;
-        // 招待URLの ?room= を消しておく（再読み込みで参加画面に戻らないように）
-        const url = new URL(location.href);
-        url.searchParams.delete('room');
-        history.replaceState(null, '', url);
+        clearRoomUrl();
     }
 
     // ===== ゲーム画面 =====
@@ -520,9 +548,16 @@ export default class UI {
         });
         $('start-local').addEventListener('click', () => this.startLocal());
         $('open-online').addEventListener('click', () => this.showOnlineMenu());
-        $('back-to-setup').addEventListener('click', () => this.showSetup());
+        $('back-to-setup').addEventListener('click', () => {
+            clearRoomUrl();
+            this.showSetup();
+        });
         $('create-room').addEventListener('click', () => this.createRoom());
         $('join-room').addEventListener('click', () => this.joinRoom());
+        // 招待で開いたときは、名前を入れて Enter でも参加できる
+        $('online-name').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && this.isInviteScreenShown()) this.joinRoom();
+        });
         $('share-invite').addEventListener('click', () => this.shareInvite());
         $('add-cpu').addEventListener('click', () => this.online?.addCpu());
         $('start-online').addEventListener('click', () => this.online?.startGame());
