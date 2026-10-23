@@ -3,12 +3,13 @@
  */
 
 import UI from './ui.js';
+import NetplayClient from './netplay/netplay-client.mjs';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const ui = new UI();
 
     // 招待のURL（?room=部屋番号）で開いたら、その部屋に参加する
-    const roomCode = new URLSearchParams(location.search).get('room');
+    const roomCode = NetplayClient.inviteRoomCode();
     if (roomCode) {
         await ui.openInvite(roomCode);
         return;

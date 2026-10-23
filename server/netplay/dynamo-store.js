@@ -1,4 +1,4 @@
-// netplay-kit 1.3.0（7496e08）からコピーしたファイル。ここでは直さず、netplay-kit で直してから同期する
+// netplay-kit 1.4.0（1352a1a）からコピーしたファイル。ここでは直さず、netplay-kit で直してから同期する
 /**
  * DynamoDB の保存先
  * 1つのテーブルに、部屋（pk = ROOM#部屋番号）と接続（pk = CONN#接続ID）を入れる

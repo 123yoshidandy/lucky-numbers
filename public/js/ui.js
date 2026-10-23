@@ -41,6 +41,7 @@ function knownOnlineName() {
 }
 
 // 招待URLの ?room= を消しておく（再読み込みで、また参加しようとしないように）
+// 部屋を出たときは NetplayClient の leave() が消すので、これは部屋に入る前の「戻る」で使う
 function clearRoomUrl() {
     const url = new URL(location.href);
     url.searchParams.delete('room');
@@ -184,11 +185,7 @@ export default class UI {
                 if (this.controller === this.online && this.online.view) this.renderGame();
             },
             onLobby: (lobby) => this.onLobby(lobby),
-            onError: (message) => {
-                this.toast(message);
-                // 招待の部屋に入れなければ（部屋がもうないなど）、いつもの入口に戻す
-                if (this.isInviteScreenShown()) this.showOnlineMenu();
-            },
+            onError: (message) => this.toast(message),
             onConnectionChange: (connected) => {
                 if (!connected) this.toast('サーバーとの接続が切れました。再接続しています…');
             }
@@ -211,10 +208,22 @@ export default class UI {
         const code = $('room-code').value.trim();
         if (!name) return this.toast('名前を入れてください');
         if (!NetplayClient.isRoomCode(code)) return this.toast(`部屋番号（数字${NetplayClient.ROOM_CODE_LENGTH}桁）を入れてください`);
+        if (this.isInviteScreenShown()) return this.joinInvitedRoom(name);
         try {
             await this.connectOnline().joinRoom(code, name);
         } catch (error) {
             this.toast(error.message);
+        }
+    }
+
+    // 招待の部屋に入る。入れなければ（部屋がもうないなど）、いつもの入口に戻す
+    async joinInvitedRoom(name) {
+        try {
+            await this.connectOnline().joinFromInvite(name);
+        } catch (error) {
+            // サーバーに断られたときの知らせは onError が出すので、ここでは通信の失敗だけ知らせる
+            if (!error.fromServer) this.toast(error.message);
+            this.showOnlineMenu();
         }
     }
 
@@ -279,7 +288,6 @@ export default class UI {
         this.online?.leave();
         if (this.controller === this.online) this.controller = null;
         this.online = null;
-        clearRoomUrl();
     }
 
     // ===== ゲーム画面 =====

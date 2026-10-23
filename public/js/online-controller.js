@@ -54,6 +54,7 @@ export default class OnlineGameController {
 
     createRoom(name) { return this.net.createRoom(name); }
     joinRoom(roomCode, name) { return this.net.joinRoom(roomCode, name); }
+    joinFromInvite(name) { return this.net.joinFromInvite(name); } // 参加できたら resolve、断られたら reject
     resume() { return this.net.resume(); }
     addCpu() { this.net.addCpu(); }
     removeCpu(seat) { this.net.removeCpu(seat); }
