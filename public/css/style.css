@@ -25,6 +25,19 @@
 /* 画面の高さに収める（上部のバー以外を main に割り当て、はみ出す画面は main の中でスクロールする） */
 html, body {
     height: 100%;
+    /* 一覧の端まで来ても、スワイプを画面全体に渡さない（iOS で、しばらくスクロールしなくなるのを防ぐ） */
+    overscroll-behavior: none;
+}
+
+/* 拡大させない（ピンチ・ダブルタップ）。スクロールは縦横とも残す（2本指の拡大は main.js でも止める） */
+html {
+    touch-action: pan-x pan-y;
+}
+
+main,
+.table-tiles,
+.help-body {
+    overscroll-behavior: contain;
 }
 
 body {
@@ -1061,6 +1074,16 @@ button.link {
 #screen-setup select {
     padding: 4px 8px;
     font-size: 15px;
+}
+
+/* iOS は 16px 未満の入力欄にフォーカスすると拡大するので、タッチの端末では 16px にする */
+@media (pointer: coarse) {
+    input,
+    select,
+    #screen-setup input,
+    #screen-setup select {
+        font-size: 16px;
+    }
 }
 
 #screen-setup .buttons {
