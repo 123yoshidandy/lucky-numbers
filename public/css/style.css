@@ -103,6 +103,7 @@ main {
     padding: 10px 16px;
     padding-bottom: max(10px, env(safe-area-inset-bottom));
     overflow-y: auto;
+    overflow-x: hidden; /* 絵の後ろの光（.hero::before）が左右に出ても、横のスクロールバーを出さない */
 }
 
 .panel {
