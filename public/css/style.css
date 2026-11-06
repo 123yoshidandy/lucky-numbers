@@ -1265,3 +1265,30 @@ button.link {
 .flyer-back {
     transform: rotateY(180deg);
 }
+
+/* ===== 低い縦画面（iPhone SE など）：相手の庭と中央の欄を詰め、自分の庭に高さを回す ===== */
+/* 山札の行（持ったタイルが浮く分）と、場・案内の行数は変えない */
+@media (orientation: portrait) and (max-height: 600px) {
+    main {
+        padding-top: 6px;
+        padding-bottom: max(6px, env(safe-area-inset-bottom));
+    }
+
+    #screen-game {
+        gap: 6px;
+    }
+
+    #screen-game .panel {
+        padding: 6px 8px;
+    }
+
+    #center {
+        gap: 4px;
+    }
+
+    /* 相手の庭は、3人並んでも同じ幅のまま小さくする */
+    .opponents {
+        grid-template-columns: repeat(var(--count, 1), minmax(0, 88px));
+        gap: 6px;
+    }
+}
