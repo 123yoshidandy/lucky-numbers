@@ -208,6 +208,55 @@ input:focus, select:focus {
     margin: 14px 0;
 }
 
+/* 部屋を作るボタンの横の、公開の切り替え */
+.public-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: #e8efe3;
+    color: var(--green-dark);
+    font-weight: 800;
+    cursor: pointer;
+}
+
+/* 公開の部屋の一覧。押すとその部屋に入る */
+.public-rooms {
+    padding-top: 12px;
+    border-top: 1px dashed #dfe6d9;
+}
+
+#public-rooms {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.public-room {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    border-radius: 12px;
+    text-align: left;
+}
+
+.public-room-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.public-room-count {
+    color: var(--green);
+}
+
 /* ===== 開始画面・ロビー ===== */
 
 .seat {

@@ -52,8 +52,11 @@ export default class OnlineGameController {
 
     // ===== 部屋の操作 =====
 
-    createRoom(name) { return this.net.createRoom(name); }
+    // { public: true } で公開の部屋にする（公開の部屋の一覧に出て、部屋番号を知らない人も入れる）
+    createRoom(name, options) { return this.net.createRoom(name, options); }
     joinRoom(roomCode, name) { return this.net.joinRoom(roomCode, name); }
+    enterRoom(roomCode, name) { return this.net.enterRoom(roomCode, name); } // 参加できたら resolve、断られたら reject
+    listRooms() { return this.net.listRooms(); }                              // 入れる公開の部屋の一覧
     joinFromInvite(name) { return this.net.joinFromInvite(name); } // 参加できたら resolve、断られたら reject
     resume() { return this.net.resume(); }
     addCpu() { this.net.addCpu(); }
@@ -64,8 +67,10 @@ export default class OnlineGameController {
     inviteUrl() { return this.net.inviteUrl(); }
 
     // 部屋を出る（サーバーに知らせるので、席が「切断中」のまま残らない。保存した参加情報も消す）
+    // 一覧を見ただけで部屋に入っていなければ、接続を閉じるだけにする（退出を送ると「部屋に入っていません」が返る）
     leave() {
-        this.net.leave();
+        if (this.net.isInRoom() || this.net.session) this.net.leave();
+        else this.net.close();
         this.view = null;
     }
 

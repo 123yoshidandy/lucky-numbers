@@ -127,17 +127,23 @@
             <label class="row">名前 <input id="online-name" maxlength="12" autocomplete="nickname"></label>
             <div class="buttons not-invited">
                 <button id="create-room" class="primary">部屋を作る</button>
+                <label class="public-toggle" title="公開の部屋の一覧に出し、部屋番号を知らない人も入れるようにします"><input type="checkbox" id="public-room">公開</label>
             </div>
             <label class="row not-invited">部屋番号 <input id="room-code" inputmode="numeric" maxlength="4" placeholder="4桁の数字"></label>
             <div class="buttons">
                 <button id="join-room" class="primary">参加する</button>
                 <button id="back-to-setup">戻る</button>
             </div>
+            <!-- 公開の部屋の一覧（押すとその部屋に入る） -->
+            <div class="public-rooms not-invited">
+                <button id="find-rooms">公開の部屋を探す</button>
+                <ul id="public-rooms"></ul>
+            </div>
         </section>
 
         <!-- ロビー -->
         <section id="screen-lobby" class="screen panel hidden">
-            <h2>部屋 <span id="lobby-code"></span></h2>
+            <h2>部屋 <span id="lobby-code"></span> <span id="lobby-public" class="badge hidden">公開</span></h2>
             <div class="buttons">
                 <button id="share-invite">招待URLを共有</button>
             </div>
